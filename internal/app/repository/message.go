@@ -48,6 +48,13 @@ func (m *messagesRepository) GetMessagesByClientId(ctx context.Context, ownerId 
 				},
 			},
 		},
+		"sort": []interface{}{
+			map[string]interface{}{
+				"createdAt": map[string]interface{}{
+					"order": "asc",
+				},
+			},
+		},
 	}
 
 	allMessages, err := m.connection.FindAll(ctx, m.elasticIndex, fields)
@@ -55,13 +62,23 @@ func (m *messagesRepository) GetMessagesByClientId(ctx context.Context, ownerId 
 		hlog.Error("messagesRepository.GetMessagesByClientId", err.Error())
 		return nil, err
 	}
+	if allMessages == nil || allMessages.Hits == nil {
+		return []*domain.SingleMessage{}, nil
+	}
 	response := make([]*domain.SingleMessage, 0, len(allMessages.Hits.Hits))
 	for _, elasticSingleResponse := range allMessages.Hits.Hits {
 		if val, ok := elasticSingleResponse.(map[string]interface{})["_source"].(map[string]interface{}); ok {
+
+			var message string
+			if msg, ok := val["message"].(string); ok {
+				message = msg
+			} else {
+				message = val["templateName"].(string)
+			}
 			singleMessage := &domain.SingleMessage{
 				Id:      val["messageId"].(string),
 				IsOwner: val["isOwner"].(bool),
-				Text:    val["message"].(string),
+				Text:    message,
 			}
 			status := []domain.MessageStatus{}
 

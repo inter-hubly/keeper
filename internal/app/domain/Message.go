@@ -4,7 +4,7 @@ type SingleMessage struct {
 	Id      string          `json:"id"`
 	Text    string          `json:"text"`
 	IsOwner bool            `json:"isOwner"`
-	Status  []MessageStatus `json:"status"`
+	Status  []MessageStatus `json:"status,omitempty"`
 }
 
 type MessageStatus struct {
