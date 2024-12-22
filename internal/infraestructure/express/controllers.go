@@ -13,24 +13,30 @@ var (
 )
 
 type controllers struct {
-	engine           *gin.Engine
-	clientController controller.Client
+	engine            *gin.Engine
+	clientController  controller.Client
+	messageController controller.Messages
 }
 
 func NewKeeperController(engine *gin.Engine) {
 	controllersOnce.Do(func() {
 		keeperControllers = &controllers{
-			engine:           engine,
-			clientController: controller.NewClient(),
+			engine:            engine,
+			clientController:  controller.NewClient(),
+			messageController: controller.NewMessages(),
 		}
 	})
 	keeperControllers.startControllers()
 }
 
 func (c *controllers) startControllers() {
+	apiGroup := c.engine.Group("/api")
 	{
-		clientGroup := c.engine.Group("/client")
+		clientGroup := apiGroup.Group("/client")
 		clientGroup.GET("/:id", c.clientController.GetClient)
 	}
-
+	{
+		messageGroup := apiGroup.Group("/messages")
+		messageGroup.POST("/search", c.messageController.SearchMessages)
+	}
 }

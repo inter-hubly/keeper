@@ -5,24 +5,28 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/inter-hubly/keeper/internal/app/service"
+	"github.com/inter-hubly/keeper/internal/infraestructure/httprest"
 )
 
 type Client interface {
 	GetClient(c *gin.Context)
 }
 
-var (
-	clientControllerOnce sync.Once
-	client               *clientController
-)
-
 type clientController struct {
 	clientService service.Client
 }
 
 func NewClient() *clientController {
+
+	var (
+		clientControllerOnce sync.Once
+		client               *clientController
+	)
+
 	clientControllerOnce.Do(func() {
-		client = &clientController{}
+		client = &clientController{
+			clientService: service.NewClient(),
+		}
 	})
 	return client
 }
@@ -31,7 +35,8 @@ func (ctrl *clientController) GetClient(c *gin.Context) {
 	id := c.Param("id")
 	getClient, err := ctrl.clientService.GetClient(c, id)
 	if err != nil {
-		c.JSON(500, err)
+		httprest.Error(c, "client not found")
+		return
 	}
-	c.JSON(200, getClient)
+	httprest.Ok(c, getClient)
 }
