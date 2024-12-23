@@ -78,6 +78,8 @@ func (m *messagesRepository) GetMessagesByClientId(ctx context.Context, ownerId 
 			singleMessage := &domain.SingleMessage{
 				Id:      val["messageId"].(string),
 				IsOwner: val["isOwner"].(bool),
+				// ToPhone: val["toPhone"].(string),
+				ToPhone: "+5548991784586",
 				Text:    message,
 			}
 			status := []domain.MessageStatus{}
