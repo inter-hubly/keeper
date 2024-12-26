@@ -1,11 +1,16 @@
 package domain
 
-type SingleMessage struct {
+type Conversations struct {
+	ProfileName string    `json:"profileName"`
+	Messages    []Message `json:"messages"`
+}
+
+type Message struct {
+	Status  []MessageStatus `json:"status,omitempty"`
 	Id      string          `json:"id"`
 	Text    string          `json:"text"`
-	IsOwner bool            `json:"isOwner"`
 	ToPhone string          `json:"toPhone"`
-	Status  []MessageStatus `json:"status,omitempty"`
+	IsOwner bool            `json:"isOwner"`
 }
 
 type MessageStatus struct {

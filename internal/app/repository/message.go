@@ -11,7 +11,7 @@ import (
 )
 
 type Messages interface {
-	GetMessagesByClientId(ctx context.Context, clientId string, searchDto *dto.Search) ([]*domain.SingleMessage, error)
+	GetMessagesByClientId(ctx context.Context, clientId string, searchDto *dto.Search) ([]*domain.SingleConversation, error)
 }
 
 type messagesRepository struct {
@@ -35,7 +35,7 @@ func NewMessages() *messagesRepository {
 	return repository
 }
 
-func (m *messagesRepository) GetMessagesByClientId(ctx context.Context, ownerId string, searchDto *dto.Search) ([]*domain.SingleMessage, error) {
+func (m *messagesRepository) GetMessagesByClientId(ctx context.Context, ownerId string, searchDto *dto.Search) (*domain.Conversations, error) {
 	fields := map[string]interface{}{
 		"query": map[string]interface{}{
 			"bool": map[string]interface{}{
@@ -63,11 +63,18 @@ func (m *messagesRepository) GetMessagesByClientId(ctx context.Context, ownerId 
 		return nil, err
 	}
 	if allMessages == nil || allMessages.Hits == nil {
-		return []*domain.SingleMessage{}, nil
+		return nil, nil
 	}
-	response := make([]*domain.SingleMessage, 0, len(allMessages.Hits.Hits))
+	conversation := make(map[string]*domain.Conversations)
+	// response := make([]*domain.Message, 0, len(allMessages.Hits.Hits))
+
+	var wasProfileName bool
 	for _, elasticSingleResponse := range allMessages.Hits.Hits {
 		if val, ok := elasticSingleResponse.(map[string]interface{})["_source"].(map[string]interface{}); ok {
+
+			if _, phoneOk := conversation[val["toPhone"].(string)]; phoneOk {
+
+			}
 
 			var message string
 			if msg, ok := val["message"].(string); ok {
@@ -75,13 +82,20 @@ func (m *messagesRepository) GetMessagesByClientId(ctx context.Context, ownerId 
 			} else {
 				message = val["templateName"].(string)
 			}
-			singleMessage := &domain.SingleMessage{
+
+			singleMessage := &domain.Message{
 				Id:      val["messageId"].(string),
 				IsOwner: val["isOwner"].(bool),
-				// ToPhone: val["toPhone"].(string),
-				ToPhone: "+5548991784586",
+				ToPhone: val["toPhone"].(string),
 				Text:    message,
 			}
+			if !wasProfileName {
+				if profileNameString, ok := val["profileName"].(string); ok {
+					singleMessage.ProfileName = profileNameString
+					wasProfileName = true
+				}
+			}
+
 			status := []domain.MessageStatus{}
 
 			if statuses, ok := val["status"]; ok {
@@ -113,5 +127,5 @@ func (m *messagesRepository) GetMessagesByClientId(ctx context.Context, ownerId 
 		}
 	}
 
-	return response, nil
+	return singleConversation, nil
 }
