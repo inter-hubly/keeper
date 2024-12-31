@@ -13,7 +13,7 @@ import (
 )
 
 type Messages interface {
-	SearchMessages(ctx context.Context, searchDto *dto.Search) ([]*domain.SingleMessage, error)
+	SearchMessages(ctx context.Context, searchDto *dto.Search) (map[string]*domain.Conversations, error)
 }
 
 type messagesService struct {
@@ -35,7 +35,7 @@ func NewMessages() *messagesService {
 	return service
 }
 
-func (s *messagesService) SearchMessages(ctx context.Context, searchDto *dto.Search) ([]*domain.SingleMessage, error) {
+func (s *messagesService) SearchMessages(ctx context.Context, searchDto *dto.Search) (map[string]*domain.Conversations, error) {
 	tenant := hctx.Tenant.Get(ctx)
 
 	messages, err := s.messagesRepository.GetMessagesByClientId(ctx, tenant, searchDto)
