@@ -74,11 +74,13 @@ func (m *messagesRepository) GetMessagesByClientId(ctx context.Context, ownerId 
 	for _, elasticSingleResponse := range allMessages.Hits.Hits {
 		if val, ok := elasticSingleResponse.(map[string]interface{})["_source"].(map[string]interface{}); ok {
 
-			var phoneOk bool
 			elasticPhoneValue := val["toPhone"].(string)
-			if conv, phoneOk = conversations[elasticPhoneValue]; !phoneOk {
+			if existingConv, phoneOk := conversations[elasticPhoneValue]; phoneOk {
+				conv = existingConv
 			} else {
-				conv = &domain.Conversations{}
+				conv = &domain.Conversations{
+					Messages: make([]domain.Message, 0),
+				}
 			}
 			var message string
 			if msgValue, ok := val["message"].(string); ok {
@@ -90,7 +92,7 @@ func (m *messagesRepository) GetMessagesByClientId(ctx context.Context, ownerId 
 			singleMessage := domain.Message{
 				Id:      val["messageId"].(string),
 				IsOwner: val["isOwner"].(bool),
-				ToPhone: val["toPhone"].(string),
+				ToPhone: elasticPhoneValue,
 				Text:    message,
 			}
 			conv.Messages = append(conv.Messages, singleMessage)
@@ -127,6 +129,8 @@ func (m *messagesRepository) GetMessagesByClientId(ctx context.Context, ownerId 
 					singleMessage.Status = status
 				}
 			}
+
+			conversations[elasticPhoneValue] = conv
 		}
 	}
 
