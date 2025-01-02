@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/inter-hubly/keeper/internal/app/domain"
 	"github.com/inter-hubly/pilot/database/pgsql"
+	"github.com/inter-hubly/pilot/domain/valueobject"
 	"github.com/inter-hubly/pilot/hlog"
 )
 
 type Client interface {
-	GetClientById(ctx context.Context, clientId string) (*domain.Client, error)
+	GetClientByPhoneNumberId(ctx context.Context, clientId string) (*valueobject.Client, error)
 }
 
 type clientRepository struct {
@@ -33,17 +33,17 @@ func NewClient() *clientRepository {
 	return client
 }
 
-func (c *clientRepository) GetClientById(ctx context.Context, clientId string) (*domain.Client, error) {
+func (c *clientRepository) GetClientByPhoneNumberId(ctx context.Context, clientId string) (*valueobject.Client, error) {
 	query := `SELECT c.id, c.name, c.email, c.app_id, c.phone_number_id, c.business_id, c.access_token 
           FROM clients c 
-          WHERE c.id = $1`
+          WHERE c.phone_number_id = $1`
 
 	queryExec, err := c.connection.Query(query, clientId)
 	if err != nil {
 		hlog.Error("clientRepository.GetClientById", fmt.Sprintf("error find clientId %s : %s", clientId, err))
 		return nil, err
 	}
-	var clientDb domain.Client
+	var clientDb valueobject.Client
 	if err = queryExec.Scan(
 		&clientDb.Id,
 		&clientDb.Name,

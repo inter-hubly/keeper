@@ -33,7 +33,7 @@ func (c *controllers) startControllers() {
 	apiGroup := c.engine.Group("/api")
 	{
 		clientGroup := apiGroup.Group("/client")
-		clientGroup.GET("/:id", c.clientController.GetClient)
+		clientGroup.GET("/:id/phone-number-id", c.clientController.GetClientByPhoneNumberId)
 	}
 	{
 		messageGroup := apiGroup.Group("/messages")

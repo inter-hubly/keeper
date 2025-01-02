@@ -9,7 +9,6 @@ type Message struct {
 	Status  []MessageStatus `json:"status,omitempty"`
 	Id      string          `json:"id"`
 	Text    string          `json:"text"`
-	ToPhone string          `json:"toPhone"`
 	IsOwner bool            `json:"isOwner"`
 }
 

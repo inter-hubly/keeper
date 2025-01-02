@@ -37,6 +37,7 @@ func NewMessages() *messagesRepository {
 
 func (m *messagesRepository) GetMessagesByClientId(ctx context.Context, ownerId string, searchDto *dto.Search) (map[string]*domain.Conversations, error) {
 	fields := map[string]interface{}{
+		"size": 100,
 		"query": map[string]interface{}{
 			"bool": map[string]interface{}{
 				"must": []interface{}{
@@ -74,12 +75,13 @@ func (m *messagesRepository) GetMessagesByClientId(ctx context.Context, ownerId 
 	for _, elasticSingleResponse := range allMessages.Hits.Hits {
 		if val, ok := elasticSingleResponse.(map[string]interface{})["_source"].(map[string]interface{}); ok {
 
-			elasticPhoneValue := val["toPhone"].(string)
+			elasticPhoneValue := val["toPhoneId"].(string)
 			if existingConv, phoneOk := conversations[elasticPhoneValue]; phoneOk {
 				conv = existingConv
 			} else {
+				foundProfileName = false
 				conv = &domain.Conversations{
-					Messages: make([]domain.Message, 0),
+					Messages: []domain.Message{},
 				}
 			}
 			var message string
@@ -88,11 +90,14 @@ func (m *messagesRepository) GetMessagesByClientId(ctx context.Context, ownerId 
 			} else {
 				message = val["templateName"].(string)
 			}
+			var messageId string
+			if msgIdValue, msgIdok := val["messageId"].(string); msgIdok {
+				messageId = msgIdValue
+			}
 
 			singleMessage := domain.Message{
-				Id:      val["messageId"].(string),
+				Id:      messageId,
 				IsOwner: val["isOwner"].(bool),
-				ToPhone: elasticPhoneValue,
 				Text:    message,
 			}
 			conv.Messages = append(conv.Messages, singleMessage)

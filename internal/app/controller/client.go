@@ -9,7 +9,7 @@ import (
 )
 
 type Client interface {
-	GetClient(c *gin.Context)
+	GetClientByPhoneNumberId(c *gin.Context)
 }
 
 type clientController struct {
@@ -31,9 +31,9 @@ func NewClient() *clientController {
 	return client
 }
 
-func (ctrl *clientController) GetClient(c *gin.Context) {
+func (ctrl *clientController) GetClientByPhoneNumberId(c *gin.Context) {
 	id := c.Param("id")
-	getClient, err := ctrl.clientService.GetClient(c, id)
+	getClient, err := ctrl.clientService.GetClientByPhoneNumberId(c, id)
 	if err != nil {
 		httprest.Error(c, "client not found")
 		return
