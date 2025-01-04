@@ -35,7 +35,7 @@ func NewClient() *clientRepository {
 
 func (c *clientRepository) GetClientByPhoneNumberId(ctx context.Context, clientId string) (*valueobject.Client, error) {
 	query := `SELECT c.id, c.name, c.email, c.app_id, c.phone_number_id, c.business_id, c.access_token 
-          FROM clients c 
+          FROM client c 
           WHERE c.phone_number_id = $1`
 
 	queryExec, err := c.connection.Query(query, clientId)

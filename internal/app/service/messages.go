@@ -43,5 +43,8 @@ func (s *messagesService) SearchMessages(ctx context.Context, searchDto *dto.Sea
 		hlog.Error("messagesService.SearchMessages", fmt.Sprintf("error find messages %s", err))
 		return nil, err
 	}
-	return messages, nil
+	if messages != nil {
+		return messages, nil
+	}
+	return map[string]*domain.Conversations{}, nil
 }
