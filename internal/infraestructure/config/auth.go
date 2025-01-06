@@ -4,24 +4,37 @@ import (
 	"context"
 
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/inter-hubly/pilot/hctx"
+	"github.com/inter-hubly/pilot/server"
+	"golang.org/x/crypto/bcrypt"
 )
 
-var jwtSecret = []byte("your-strong-secret-key")
-
 type CustomClaims struct {
-	Username string `json:"username"`
-	Role     string `json:"role"`
-	Tenant   uint64 `json:"tenant"`
+	LoggedUser hctx.Logged `json:"loggedUser"`
 	jwt.RegisteredClaims
 }
 
-func GenerateBearerToken(_ context.Context, username string, clientId uint64) (string, error) {
+func GenerateBearerToken(_ context.Context, username, tenantId string) (string, error) {
 	claims := CustomClaims{
-		Username: username,
-		Tenant:   clientId,
+		LoggedUser: hctx.Logged{
+			Username: username,
+			Tenant:   tenantId,
+		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	return token.SignedString(jwtSecret)
+	return token.SignedString([]byte(server.GetEnvironment().HashEncrypt))
+}
+
+func HashPassword(password string) (string, error) {
+	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hashedBytes), nil
+}
+
+func CheckHashPassword(password, hashedPassword string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/inter-hubly/keeper/internal/app/service"
 	"github.com/inter-hubly/keeper/internal/infraestructure/httprest"
+	"github.com/inter-hubly/keeper/internal/infraestructure/middleware"
 )
 
 type Client interface {
@@ -32,8 +33,8 @@ func NewClient() *clientController {
 }
 
 func (ctrl *clientController) GetClientByPhoneNumberId(c *gin.Context) {
-	id := c.Param("id")
-	getClient, err := ctrl.clientService.GetClientByPhoneNumberId(c, id)
+	ctx, loggedUser := middleware.GetLoggedUser(c)
+	getClient, err := ctrl.clientService.GetClientByPhoneNumberId(ctx, loggedUser.Tenant)
 	if err != nil {
 		httprest.Error(c, "client not found")
 		return

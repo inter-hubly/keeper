@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/inter-hubly/keeper/internal/app/controller"
+	"github.com/inter-hubly/keeper/internal/infraestructure/middleware"
 )
 
 var (
@@ -35,13 +36,15 @@ func (c *controllers) startControllers() {
 	apiGroup := c.engine.Group("/api")
 	{
 		apiGroup.POST("/login", c.authController.Login)
+		apiGroup.POST("/sign-up", c.authController.CreateUser)
 	}
 	{
-		clientGroup := apiGroup.Group("/client")
-		clientGroup.GET("/:id/phone-number-id", c.clientController.GetClientByPhoneNumberId)
+
+		clientGroup := apiGroup.Group("/client").Use(middleware.AuthMiddleware())
+		clientGroup.GET("/phone-number-id", c.clientController.GetClientByPhoneNumberId)
 	}
 	{
-		messageGroup := apiGroup.Group("/messages")
+		messageGroup := apiGroup.Group("/messages").Use(middleware.AuthMiddleware())
 		messageGroup.POST("/search", c.messageController.SearchMessages)
 	}
 }

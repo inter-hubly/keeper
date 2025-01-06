@@ -11,6 +11,7 @@ import (
 
 type Auth interface {
 	Login(c *gin.Context)
+	CreateUser(c *gin.Context)
 }
 
 type authController struct {
@@ -40,7 +41,8 @@ func (a *authController) Login(c *gin.Context) {
 
 	accessToken, err := a.authService.Login(c, &login)
 	if err != nil {
-		httprest.Error(c, err.Error())
+		httprest.Unauthorized(c)
+		return
 	}
 
 	accessTokenDto := struct {
@@ -50,4 +52,20 @@ func (a *authController) Login(c *gin.Context) {
 	}
 
 	httprest.Ok(c, accessTokenDto)
+}
+
+func (a *authController) CreateUser(c *gin.Context) {
+	var user dto.User
+
+	if err := c.BindJSON(&user); err != nil {
+		httprest.Error(c, "Error when marshal login")
+		return
+	}
+
+	if err := a.authService.CreateUser(c, &user); err != nil {
+		httprest.Error(c, err.Error())
+		return
+	}
+
+	httprest.Ok(c, nil)
 }

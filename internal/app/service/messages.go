@@ -36,9 +36,9 @@ func NewMessages() *messagesService {
 }
 
 func (s *messagesService) SearchMessages(ctx context.Context, searchDto *dto.Search) (map[string]*domain.Conversations, error) {
-	tenant := hctx.Tenant.Get(ctx)
+	loggedUser := hctx.LoggedUser.Get(ctx)
 
-	messages, err := s.messagesRepository.GetMessagesByClientId(ctx, tenant, searchDto)
+	messages, err := s.messagesRepository.GetMessagesByClientId(ctx, loggedUser.Tenant, searchDto)
 	if err != nil {
 		hlog.Error("messagesService.SearchMessages", fmt.Sprintf("error find messages %s", err))
 		return nil, err

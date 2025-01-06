@@ -10,14 +10,17 @@ type errResponse struct {
 
 func Unauthorized(c *gin.Context) {
 	c.JSON(401, errResponse{Error: "Unauthorized"})
+	c.Abort()
 }
 
 func Forbidden(c *gin.Context) {
 	c.JSON(403, errResponse{Error: "Forbidden"})
+	c.Abort()
 }
 
 func Error(c *gin.Context, msg string) {
 	c.JSON(500, errResponse{Error: msg})
+	c.Abort()
 }
 
 func Ok(c *gin.Context, msg any) {

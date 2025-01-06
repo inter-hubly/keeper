@@ -7,7 +7,7 @@ import (
 	"github.com/inter-hubly/keeper/internal/app/domain/dto"
 	"github.com/inter-hubly/keeper/internal/app/service"
 	"github.com/inter-hubly/keeper/internal/infraestructure/httprest"
-	"github.com/inter-hubly/pilot/hctx"
+	"github.com/inter-hubly/keeper/internal/infraestructure/middleware"
 )
 
 type Messages interface {
@@ -34,8 +34,7 @@ func NewMessages() *messagesController {
 
 func (m *messagesController) SearchMessages(c *gin.Context) {
 	var searchDTO *dto.Search
-	tenantHeader := c.GetHeader("tenant")
-	ctx := hctx.Tenant.New(tenantHeader)
+	ctx, _ := middleware.GetLoggedUser(c)
 
 	// if err := c.BindJSON(searchDTO); err != nil {
 	// 	httprest.Error(c, "Error getting body")
