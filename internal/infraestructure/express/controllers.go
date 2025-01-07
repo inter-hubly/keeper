@@ -41,7 +41,7 @@ func (c *controllers) startControllers() {
 	{
 
 		clientGroup := apiGroup.Group("/client").Use(middleware.AuthMiddleware())
-		clientGroup.GET("/phone-number-id", c.clientController.GetClientByPhoneNumberId)
+		clientGroup.GET("/phone-number-id", c.clientController.GetClientPhoneNumberId)
 	}
 	{
 		messageGroup := apiGroup.Group("/messages").Use(middleware.AuthMiddleware())

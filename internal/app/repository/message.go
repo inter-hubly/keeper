@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"github.com/inter-hubly/keeper/internal/app/domain"
@@ -28,7 +29,7 @@ func NewMessages() *messagesRepository {
 
 	repositoryOnce.Do(func() {
 		repository = &messagesRepository{
-			elasticIndex: "whatsapp.ready",
+			elasticIndex: "whatsapp",
 			connection:   elasticsearch.GetConnection(),
 		}
 	})
@@ -39,15 +40,7 @@ func (m *messagesRepository) GetMessagesByClientId(ctx context.Context, ownerId 
 	fields := map[string]interface{}{
 		"size": 100,
 		"query": map[string]interface{}{
-			"bool": map[string]interface{}{
-				"must": []interface{}{
-					map[string]interface{}{
-						"match": map[string]interface{}{
-							"ownerId": ownerId,
-						},
-					},
-				},
-			},
+			"match_all": map[string]interface{}{},
 		},
 		"sort": []interface{}{
 			map[string]interface{}{
@@ -58,7 +51,7 @@ func (m *messagesRepository) GetMessagesByClientId(ctx context.Context, ownerId 
 		},
 	}
 
-	allMessages, err := m.connection.FindAll(ctx, m.elasticIndex, fields)
+	allMessages, err := m.connection.FindAll(ctx, fmt.Sprintf("%s.%s", ownerId, m.elasticIndex), fields)
 	if err != nil {
 		hlog.Error("messagesRepository.GetMessagesByClientId", err.Error())
 		return nil, err

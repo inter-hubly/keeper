@@ -10,7 +10,7 @@ import (
 )
 
 type Client interface {
-	GetClientByPhoneNumberId(c *gin.Context)
+	GetClientPhoneNumberId(c *gin.Context)
 }
 
 type clientController struct {
@@ -32,12 +32,16 @@ func NewClient() *clientController {
 	return client
 }
 
-func (ctrl *clientController) GetClientByPhoneNumberId(c *gin.Context) {
+func (ctrl *clientController) GetClientPhoneNumberId(c *gin.Context) {
 	ctx, loggedUser := middleware.GetLoggedUser(c)
 	getClient, err := ctrl.clientService.GetClientByPhoneNumberId(ctx, loggedUser.Tenant)
 	if err != nil {
 		httprest.Error(c, "client not found")
 		return
 	}
-	httprest.Ok(c, getClient)
+	httprest.Ok(c, struct {
+		PhoneNumberId string `json:"phoneNumberId"`
+	}{
+		PhoneNumberId: getClient.PhoneNumberId,
+	})
 }

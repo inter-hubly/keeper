@@ -34,7 +34,7 @@ func NewClient() *clientRepository {
 }
 
 func (c *clientRepository) GetClientByPhoneNumberId(ctx context.Context, clientId string) (*valueobject.Client, error) {
-	query := `SELECT c.id, c.name, c.email, c.app_id, c.phone_number_id, c.business_id, c.access_token 
+	query := `SELECT c.id, c.name, c.email, c.app_id, c.phone_number_id, c.business_id
           FROM client c 
           WHERE c.phone_number_id = $1`
 
@@ -51,7 +51,6 @@ func (c *clientRepository) GetClientByPhoneNumberId(ctx context.Context, clientI
 		&clientDb.AppId,
 		&clientDb.PhoneNumberId,
 		&clientDb.BusinessId,
-		&clientDb.AccessToken,
 	); err != nil {
 		hlog.Error("clientRepository.GetClientById", fmt.Sprintf("error scan clientId %s : %s", clientId, err))
 		return nil, err
