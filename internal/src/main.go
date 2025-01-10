@@ -16,8 +16,8 @@ func main() {
 
 	express.Start(router)
 
-	hlog.Info("main", fmt.Sprintf("Server start in port %d", server.GetEnvironment().Port))
-	if err := router.Run(fmt.Sprintf(":%d", server.GetEnvironment().Port)); err != nil {
+	hlog.Info("main", fmt.Sprintf("Server start in port %s", server.GetEnvironment().Port))
+	if err := router.Run(fmt.Sprintf(":%s", server.GetEnvironment().Port)); err != nil {
 		hlog.Error("main", "Failed to start server: %v", err)
 	}
 }

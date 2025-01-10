@@ -2,12 +2,12 @@ module github.com/inter-hubly/keeper
 
 go 1.23.1
 
-replace github.com/inter-hubly/pilot => /home/saimon/Documents/Hubly/pilot //Linux
+//replace github.com/inter-hubly/pilot => /home/saimon/Documents/Hubly/pilot //Linux
 
 require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/golang-jwt/jwt/v4 v4.5.1
-	github.com/inter-hubly/pilot v0.0.1
+	github.com/inter-hubly/pilot v0.0.3
 	golang.org/x/crypto v0.23.0
 )
 
