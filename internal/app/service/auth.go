@@ -39,7 +39,7 @@ func NewAuthenticate() *authService {
 }
 
 func (s *authService) Login(ctx context.Context, login *dto.Login) (string, error) {
-	hlog.Error("authService.Login", fmt.Sprintf("User :%s make one login", login.Username))
+	hlog.Error(ctx, "authService.Login", fmt.Sprintf("User :%s make one login", login.Username))
 	userDb, err := s.userRepository.GetUserByUsername(ctx, login.Username)
 	if err != nil {
 		return "", err
@@ -59,7 +59,7 @@ func (s *authService) Login(ctx context.Context, login *dto.Login) (string, erro
 }
 
 func (s *authService) CreateUser(ctx context.Context, userDto *dto.User) error {
-	hlog.Error("authService.CreateUser", fmt.Sprintf("Create user: %s", userDto.Name))
+	hlog.Error(ctx, "authService.CreateUser", fmt.Sprintf("Create user: %s", userDto.Name))
 	var user valueobject.User
 
 	user.Name = userDto.Name
@@ -73,7 +73,7 @@ func (s *authService) CreateUser(ctx context.Context, userDto *dto.User) error {
 	user.UpdatedAt = now
 
 	if err := s.userRepository.SaveUser(ctx, &user); err != nil {
-		hlog.Error("userRepository.SaveUser", fmt.Sprintf("error insert User : %s", err))
+		hlog.Error(ctx, "userRepository.SaveUser", fmt.Sprintf("error insert User : %s", err))
 		return err
 	}
 

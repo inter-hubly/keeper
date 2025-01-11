@@ -36,7 +36,7 @@ func NewClient() *clientService {
 func (c *clientService) GetClientByPhoneNumberId(ctx context.Context, phoneNumberId string) (*valueobject.Client, error) {
 	clientDb, err := c.clientRepository.GetClientByPhoneNumberId(ctx, phoneNumberId)
 	if err != nil {
-		hlog.Error("clientService.GetClient", fmt.Sprintf("error getting client :%d", err))
+		hlog.Error(ctx, "clientService.GetClient", fmt.Sprintf("error getting client :%d", err))
 		return nil, err
 	}
 	return clientDb, nil

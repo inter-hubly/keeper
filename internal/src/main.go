@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/gin-gonic/gin"
@@ -10,14 +11,14 @@ import (
 )
 
 func main() {
-	server.FillConfigEnvironment()
-
+	ctx := context.Background()
+	server.FillConfigEnvironment(ctx)
 	router := gin.Default()
 
 	express.Start(router)
 
-	hlog.Info("main", fmt.Sprintf("Server start in port %s", server.GetEnvironment().Port))
+	hlog.Info(ctx, "main", fmt.Sprintf("Server start in port %s", server.GetEnvironment().Port))
 	if err := router.Run(fmt.Sprintf(":%s", server.GetEnvironment().Port)); err != nil {
-		hlog.Error("main", "Failed to start server: %v", err)
+		hlog.Error(ctx, "main", fmt.Sprintf("Failed to start server: %v", err))
 	}
 }

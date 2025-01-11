@@ -53,7 +53,7 @@ func (m *messagesRepository) GetMessagesByClientId(ctx context.Context, ownerId 
 
 	allMessages, err := m.connection.FindAll(ctx, fmt.Sprintf("%s.%s", ownerId, m.elasticIndex), fields)
 	if err != nil {
-		hlog.Error("messagesRepository.GetMessagesByClientId", err.Error())
+		hlog.Error(ctx, "messagesRepository.GetMessagesByClientId", err.Error())
 		return nil, err
 	}
 	if allMessages == nil || allMessages.Hits == nil {

@@ -40,7 +40,7 @@ func (s *messagesService) SearchMessages(ctx context.Context, searchDto *dto.Sea
 
 	messages, err := s.messagesRepository.GetMessagesByClientId(ctx, loggedUser.Tenant, searchDto)
 	if err != nil {
-		hlog.Error("messagesService.SearchMessages", fmt.Sprintf("error find messages %s", err))
+		hlog.Error(ctx, "messagesService.SearchMessages", fmt.Sprintf("error find messages %s", err))
 		return nil, err
 	}
 	if messages != nil {

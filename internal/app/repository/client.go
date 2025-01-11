@@ -40,7 +40,7 @@ func (c *clientRepository) GetClientByPhoneNumberId(ctx context.Context, clientI
 
 	queryExec, err := c.connection.Query(query, clientId)
 	if err != nil {
-		hlog.Error("clientRepository.GetClientById", fmt.Sprintf("error find clientId %s : %s", clientId, err))
+		hlog.Error(ctx, "clientRepository.GetClientById", fmt.Sprintf("error find clientId %s : %s", clientId, err))
 		return nil, err
 	}
 	var clientDb valueobject.Client
@@ -52,7 +52,7 @@ func (c *clientRepository) GetClientByPhoneNumberId(ctx context.Context, clientI
 		&clientDb.PhoneNumberId,
 		&clientDb.BusinessId,
 	); err != nil {
-		hlog.Error("clientRepository.GetClientById", fmt.Sprintf("error scan clientId %s : %s", clientId, err))
+		hlog.Error(ctx, "clientRepository.GetClientById", fmt.Sprintf("error scan clientId %s : %s", clientId, err))
 		return nil, err
 	}
 	return &clientDb, nil

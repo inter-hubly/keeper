@@ -41,7 +41,7 @@ func (r *userRepository) GetUserByUsername(ctx context.Context, userEmail string
 
 	queryExec, err := r.connection.Query(query, userEmail)
 	if err != nil {
-		hlog.Error("userRepository.GetUserByUsername", fmt.Sprintf("error find UserEmail %s : %s", userEmail, err))
+		hlog.Error(ctx, "userRepository.GetUserByUsername", fmt.Sprintf("error find UserEmail %s : %s", userEmail, err))
 		return nil, err
 	}
 	var userDb valueobject.User
@@ -56,7 +56,7 @@ func (r *userRepository) GetUserByUsername(ctx context.Context, userEmail string
 		&userDb.UpdatedAt,
 		&userDb.TenantId,
 	); err != nil {
-		hlog.Error("userRepository.GetUserByUsername", fmt.Sprintf("error scan UserEmail %s : %s", userEmail, err))
+		hlog.Error(ctx, "userRepository.GetUserByUsername", fmt.Sprintf("error scan UserEmail %s : %s", userEmail, err))
 		return nil, err
 	}
 	return &userDb, nil

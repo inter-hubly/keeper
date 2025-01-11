@@ -2,7 +2,8 @@ module github.com/inter-hubly/keeper
 
 go 1.23.1
 
-//replace github.com/inter-hubly/pilot => /home/saimon/Documents/Hubly/pilot //Linux
+//replace github.com/inter-hubly/pilot => /Users/saimonribeirosilva/Hubly/pilot // Mac
+replace github.com/inter-hubly/pilot => /home/saimon/Documents/Hubly/pilot //Linux
 
 require (
 	github.com/gin-gonic/gin v1.10.0
