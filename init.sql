@@ -1,6 +1,8 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 CREATE TABLE IF NOT EXISTS client
 (
-    id              BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name            TEXT        NOT NULL,
     email           TEXT UNIQUE NOT NULL,
     app_id          TEXT        NOT NULL,
@@ -9,24 +11,35 @@ CREATE TABLE IF NOT EXISTS client
     access_token    TEXT        NOT NULL,
     created_at      TIMESTAMP        NOT NULL,
     updated_at      TIMESTAMP        NOT NULL,
-    delete          BOOL DEFAULT false
+    removed          BOOL DEFAULT false
 );
 
 CREATE TABLE IF NOT EXISTS "user"
 (
-    id            SERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name          VARCHAR(255)        NOT NULL,
     email         VARCHAR(255) UNIQUE NOT NULL,
     password      VARCHAR(255)        NOT NULL,
     login_attempt SMALLINT DEFAULT 0,
     created_at    TIMESTAMP                NOT NULL,
     updated_at    TIMESTAMP                NOT NULL,
-    delete        BOOL     DEFAULT false,
+    removed        BOOL     DEFAULT false,
     client_id     INT,
     CONSTRAINT fk_client FOREIGN KEY (client_id) REFERENCES client (id)
 );
 
+CREATE TABLE IF NOT EXISTS contact
+(
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name          VARCHAR(255)        NOT NULL,
+    phone         VARCHAR(255) UNIQUE NOT NULL,
+    created_at    TIMESTAMP                NOT NULL,
+    updated_at    TIMESTAMP                NOT NULL,
+    removed        BOOL     DEFAULT false
+);
 
+INSERT INTO contact (name, phone, created_at, updated_at) VALUES ('Saimon Ribeiro', '48991784586', CURRENT_DATE, CURRENT_DATE) ON CONFLICT (phone) DO NOTHING;
+INSERT INTO contact (name, phone, created_at, updated_at) VALUES ('Fabiane Staziaki', '48988356622', CURRENT_DATE, CURRENT_DATE) ON CONFLICT (phone) DO NOTHING;
 
 INSERT INTO client (name, email, app_id, phone_number_id, business_id,
                     access_token, created_at, updated_at)
@@ -52,5 +65,6 @@ ON CONFLICT (email) DO NOTHING;
 INSERT INTO "user" (name, email, password, login_attempt, created_at,
                     updated_at, client_id)
 VALUES ('Saimon', 'saimon@test.com', '12345', 0, CURRENT_DATE, CURRENT_DATE,
-        (SELECT id FROM client WHERE email = 'hubly@saimon.com'))
+        (SELECT id FROM client WHERE email = 'hubly@teste.com'))
 ON CONFLICT (email) DO NOTHING;
+
