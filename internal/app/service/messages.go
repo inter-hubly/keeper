@@ -13,38 +13,35 @@ import (
 )
 
 type Messages interface {
-	SearchMessages(ctx context.Context, searchDto *kdto.Search) (map[string]*domain.Conversations, error)
+	SearchMessages(ctx context.Context, loggedUser *hctx.Logged, searchDto *kdto.Search) (map[string]*domain.Conversations, error)
 }
 
 type messagesService struct {
 	messagesRepository repository.Messages
 }
 
+var (
+	messageServiceOnce sync.Once
+	messages           *messagesService
+)
+
 func NewMessages() *messagesService {
-
-	var (
-		serviceOnce sync.Once
-		service     *messagesService
-	)
-
-	serviceOnce.Do(func() {
-		service = &messagesService{
+	messageServiceOnce.Do(func() {
+		messages = &messagesService{
 			messagesRepository: repository.NewMessages(),
 		}
 	})
-	return service
+	return messages
 }
 
-func (s *messagesService) SearchMessages(ctx context.Context, searchDto *kdto.Search) (map[string]*domain.Conversations, error) {
-	loggedUser := hctx.LoggedUser.Get(ctx)
-
-	messages, err := s.messagesRepository.GetMessagesByClientId(ctx, loggedUser.Tenant, searchDto)
+func (s *messagesService) SearchMessages(ctx context.Context, loggedUser *hctx.Logged, searchDto *kdto.Search) (map[string]*domain.Conversations, error) {
+	msgDb, err := s.messagesRepository.GetMessagesByClientId(ctx, loggedUser.Tenant, searchDto)
 	if err != nil {
 		hlog.Error(ctx, "messagesService.SearchMessages", fmt.Sprintf("error find messages %s", err))
 		return nil, err
 	}
-	if messages != nil {
-		return messages, nil
+	if msgDb != nil {
+		return msgDb, nil
 	}
 	return map[string]*domain.Conversations{}, nil
 }

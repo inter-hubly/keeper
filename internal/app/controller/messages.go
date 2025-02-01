@@ -34,13 +34,9 @@ func NewMessages() *messagesController {
 
 func (m *messagesController) SearchMessages(c *gin.Context) {
 	var searchDTO *kdto.Search
-	ctx, _ := middleware.GetLoggedUser(c)
+	ctx, loggedUser := middleware.GetLoggedUser(c)
 
-	// if err := c.BindJSON(searchDTO); err != nil {
-	// 	httprest.Error(c, "Error getting body")
-	// 	return
-	// }
-	messages, err := m.messageService.SearchMessages(ctx, searchDTO)
+	messages, err := m.messageService.SearchMessages(ctx, loggedUser, searchDTO)
 	if err != nil {
 		httprest.Error(c, "Error find messages")
 		return

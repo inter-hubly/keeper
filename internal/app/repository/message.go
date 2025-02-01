@@ -81,7 +81,7 @@ func (m *messagesRepository) GetMessagesByClientId(ctx context.Context, ownerId 
 			if msgValue, ok := val["message"].(string); ok {
 				message = msgValue
 			} else {
-				message = val["templateName"].(string)
+				message = val["campaignId"].(string)
 			}
 			var messageId string
 			if msgIdValue, msgIdok := val["messageId"].(string); msgIdok {
