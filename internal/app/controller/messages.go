@@ -4,7 +4,7 @@ import (
 	"sync"
 
 	"github.com/gin-gonic/gin"
-	"github.com/inter-hubly/keeper/internal/app/domain/dto"
+	"github.com/inter-hubly/keeper/internal/app/domain/kdto"
 	"github.com/inter-hubly/keeper/internal/app/service"
 	"github.com/inter-hubly/keeper/internal/infraestructure/httprest"
 	"github.com/inter-hubly/keeper/internal/infraestructure/middleware"
@@ -33,7 +33,7 @@ func NewMessages() *messagesController {
 }
 
 func (m *messagesController) SearchMessages(c *gin.Context) {
-	var searchDTO *dto.Search
+	var searchDTO *kdto.Search
 	ctx, _ := middleware.GetLoggedUser(c)
 
 	// if err := c.BindJSON(searchDTO); err != nil {

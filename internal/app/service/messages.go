@@ -6,14 +6,14 @@ import (
 	"sync"
 
 	"github.com/inter-hubly/keeper/internal/app/domain"
-	"github.com/inter-hubly/keeper/internal/app/domain/dto"
+	"github.com/inter-hubly/keeper/internal/app/domain/kdto"
 	"github.com/inter-hubly/keeper/internal/app/repository"
 	"github.com/inter-hubly/pilot/hctx"
 	"github.com/inter-hubly/pilot/hlog"
 )
 
 type Messages interface {
-	SearchMessages(ctx context.Context, searchDto *dto.Search) (map[string]*domain.Conversations, error)
+	SearchMessages(ctx context.Context, searchDto *kdto.Search) (map[string]*domain.Conversations, error)
 }
 
 type messagesService struct {
@@ -35,7 +35,7 @@ func NewMessages() *messagesService {
 	return service
 }
 
-func (s *messagesService) SearchMessages(ctx context.Context, searchDto *dto.Search) (map[string]*domain.Conversations, error) {
+func (s *messagesService) SearchMessages(ctx context.Context, searchDto *kdto.Search) (map[string]*domain.Conversations, error) {
 	loggedUser := hctx.LoggedUser.Get(ctx)
 
 	messages, err := s.messagesRepository.GetMessagesByClientId(ctx, loggedUser.Tenant, searchDto)

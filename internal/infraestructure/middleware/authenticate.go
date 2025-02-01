@@ -42,10 +42,13 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 		claims := token.Claims.(jwt.MapClaims)
 		if loggedUserCtx, ok := claims["loggedUser"].(map[string]interface{}); ok {
+			tenantId := loggedUserCtx["tenant"].(string)
 			ctx := hctx.LoggedUser.New(hctx.Logged{
 				Username: loggedUserCtx["username"].(string),
-				Tenant:   loggedUserCtx["tenant"].(string),
+				Tenant:   tenantId,
+				UserId:   loggedUserCtx["userId"].(string),
 			})
+
 			c.Set(config.LoggedUserContextKey, ctx)
 			c.Next()
 			return
@@ -57,16 +60,28 @@ func AuthMiddleware() gin.HandlerFunc {
 }
 
 func GetLoggedUser(ctx *gin.Context) (context.Context, *hctx.Logged) {
+	// Retrieve the logged user context
 	loggedUserCtx, exists := ctx.Get(config.LoggedUserContextKey)
 	if !exists {
 		httprest.Unauthorized(ctx)
 		return nil, nil
 	}
 
+	// Check if the logged user is of the expected type
 	if loggedUser, ok := loggedUserCtx.(context.Context); ok {
+		// Extract the Logged data from the context
 		logged := loggedUser.Value(hctx.LoggedUser).(hctx.Logged)
-		return hctx.LoggedUser.New(logged), &logged
+
+		// You can create a new context here, but do not overwrite the *gin.Context
+		newCtx := hctx.LoggedUser.New(logged)
+		newCtx = hctx.Tenant.New(logged.Tenant)
+
+		// Pass the new context back, but keep the original gin.Context intact
+		ctx.Set(config.LoggedUserContextKey, newCtx)
+
+		return newCtx, &logged
 	}
+
 	httprest.Unauthorized(ctx)
 	return nil, nil
 }

@@ -15,7 +15,7 @@ func main() {
 	server.FillConfigEnvironment(ctx)
 	router := gin.Default()
 
-	express.Start(router)
+	express.Start(ctx, router)
 
 	hlog.Info(ctx, "main", fmt.Sprintf("Server start in port %s", server.GetEnvironment().Port))
 	if err := router.Run(fmt.Sprintf(":%s", server.GetEnvironment().Port)); err != nil {

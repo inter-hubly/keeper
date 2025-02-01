@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/inter-hubly/keeper/internal/app/domain/dto"
+	"github.com/inter-hubly/keeper/internal/app/domain/kdto"
 	"github.com/inter-hubly/keeper/internal/app/repository"
 	"github.com/inter-hubly/keeper/internal/infraestructure/config"
 	"github.com/inter-hubly/pilot/domain/valueobject"
@@ -15,21 +15,20 @@ import (
 )
 
 type Authenticate interface {
-	Login(ctx context.Context, searchDto *dto.Login) (string, error)
-	CreateUser(ctx context.Context, searchDto *dto.User) error
+	Login(ctx context.Context, searchDto *kdto.Login) (string, error)
+	CreateUser(ctx context.Context, searchDto *kdto.User) error
 }
 
 type authService struct {
 	userRepository repository.User
 }
 
+var (
+	serviceOnce sync.Once
+	service     *authService
+)
+
 func NewAuthenticate() *authService {
-
-	var (
-		serviceOnce sync.Once
-		service     *authService
-	)
-
 	serviceOnce.Do(func() {
 		service = &authService{
 			userRepository: repository.NewUser(),
@@ -38,7 +37,7 @@ func NewAuthenticate() *authService {
 	return service
 }
 
-func (s *authService) Login(ctx context.Context, login *dto.Login) (string, error) {
+func (s *authService) Login(ctx context.Context, login *kdto.Login) (string, error) {
 	hlog.Error(ctx, "authService.Login", fmt.Sprintf("User :%s make one login", login.Username))
 	userDb, err := s.userRepository.GetUserByUsername(ctx, login.Username)
 	if err != nil {
@@ -51,14 +50,14 @@ func (s *authService) Login(ctx context.Context, login *dto.Login) (string, erro
 		}
 	}
 
-	token, err := config.GenerateBearerToken(ctx, userDb.Name, userDb.TenantId)
+	token, err := config.GenerateBearerToken(ctx, userDb.Name, userDb.Id, userDb.TenantId)
 	if err != nil {
 		return "", err
 	}
 	return token, nil
 }
 
-func (s *authService) CreateUser(ctx context.Context, userDto *dto.User) error {
+func (s *authService) CreateUser(ctx context.Context, userDto *kdto.User) error {
 	hlog.Error(ctx, "authService.CreateUser", fmt.Sprintf("Create user: %s", userDto.Name))
 	var user valueobject.User
 

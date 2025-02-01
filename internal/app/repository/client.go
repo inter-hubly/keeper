@@ -18,13 +18,12 @@ type clientRepository struct {
 	connection pgsql.SqlConn
 }
 
+var (
+	clientRepositoryOnce sync.Once
+	client               *clientRepository
+)
+
 func NewClient() *clientRepository {
-
-	var (
-		clientRepositoryOnce sync.Once
-		client               *clientRepository
-	)
-
 	clientRepositoryOnce.Do(func() {
 		client = &clientRepository{
 			connection: pgsql.GetConnection(),

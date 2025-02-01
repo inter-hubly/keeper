@@ -1,4 +1,4 @@
-package dto
+package kdto
 
 type Search struct {
 	Page       uint    `json:"page"`

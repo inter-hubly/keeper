@@ -4,7 +4,7 @@ import (
 	"sync"
 
 	"github.com/gin-gonic/gin"
-	"github.com/inter-hubly/keeper/internal/app/domain/dto"
+	"github.com/inter-hubly/keeper/internal/app/domain/kdto"
 	"github.com/inter-hubly/keeper/internal/app/service"
 	"github.com/inter-hubly/keeper/internal/infraestructure/httprest"
 )
@@ -18,11 +18,13 @@ type authController struct {
 	authService service.Authenticate
 }
 
+var (
+	authControllerOnce sync.Once
+	auth               *authController
+)
+
 func NewAuth() *authController {
-	var (
-		authControllerOnce sync.Once
-		auth               *authController
-	)
+
 	authControllerOnce.Do(func() {
 		auth = &authController{
 			authService: service.NewAuthenticate(),
@@ -32,7 +34,7 @@ func NewAuth() *authController {
 }
 
 func (a *authController) Login(c *gin.Context) {
-	var login dto.Login
+	var login kdto.Login
 
 	if err := c.BindJSON(&login); err != nil {
 		httprest.Error(c, "Error when marshal login")
@@ -55,7 +57,7 @@ func (a *authController) Login(c *gin.Context) {
 }
 
 func (a *authController) CreateUser(c *gin.Context) {
-	var user dto.User
+	var user kdto.User
 
 	if err := c.BindJSON(&user); err != nil {
 		httprest.Error(c, "Error when marshal login")
