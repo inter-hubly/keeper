@@ -18,6 +18,7 @@ type Messages interface {
 
 type messagesService struct {
 	messagesRepository repository.Messages
+	contactRepository  repository.Contact
 }
 
 var (
@@ -25,10 +26,11 @@ var (
 	messages           *messagesService
 )
 
-func NewMessages() *messagesService {
+func NewMessages(ctx context.Context) *messagesService {
 	messageServiceOnce.Do(func() {
 		messages = &messagesService{
 			messagesRepository: repository.NewMessages(),
+			contactRepository:  repository.NewContact(ctx),
 		}
 	})
 	return messages
@@ -41,6 +43,14 @@ func (s *messagesService) SearchMessages(ctx context.Context, loggedUser *hctx.L
 		return nil, err
 	}
 	if msgDb != nil {
+		contacts, err := s.contactRepository.FindContacts(ctx, loggedUser.Tenant)
+		if err != nil {
+			hlog.Error(ctx, "messagesService.SearchMessages", fmt.Sprintf("error find contacts %s", err))
+		}
+
+		for _, ct := range contacts {
+			msgDb[ct.Phone].LocalProfileName = ct.Name
+		}
 		return msgDb, nil
 	}
 	return map[string]*domain.Conversations{}, nil

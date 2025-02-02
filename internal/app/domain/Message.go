@@ -1,8 +1,9 @@
 package domain
 
 type Conversations struct {
-	ProfileName string    `json:"profileName"`
-	Messages    []Message `json:"messages"`
+	WhatsAppProfileName string    `json:"whatsAppProfileName"`
+	LocalProfileName    string    `json:"localProfileName"`
+	Messages            []Message `json:"messages"`
 }
 
 type Message struct {

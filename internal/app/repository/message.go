@@ -60,7 +60,6 @@ func (m *messagesRepository) GetMessagesByClientId(ctx context.Context, ownerId 
 		return nil, nil
 	}
 	conversations := make(map[string]*domain.Conversations)
-	// response := make([]*domain.Message, 0, len(allMessages.Hits.Hits))
 
 	var foundProfileName bool
 	var conv *domain.Conversations
@@ -96,7 +95,7 @@ func (m *messagesRepository) GetMessagesByClientId(ctx context.Context, ownerId 
 			conv.Messages = append(conv.Messages, singleMessage)
 			if !foundProfileName {
 				if profileNameString, ok := val["profileName"].(string); ok {
-					conv.ProfileName = profileNameString
+					conv.WhatsAppProfileName = profileNameString
 					foundProfileName = true
 				}
 			}

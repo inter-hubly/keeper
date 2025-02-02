@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -18,15 +19,15 @@ type messagesController struct {
 	messageService service.Messages
 }
 
-func NewMessages() *messagesController {
-	var (
-		messagesControllerOnce sync.Once
-		messages               *messagesController
-	)
+var (
+	messagesControllerOnce sync.Once
+	messages               *messagesController
+)
 
+func NewMessages(ctx context.Context) *messagesController {
 	messagesControllerOnce.Do(func() {
 		messages = &messagesController{
-			messageService: service.NewMessages(),
+			messageService: service.NewMessages(ctx),
 		}
 	})
 	return messages
@@ -36,10 +37,10 @@ func (m *messagesController) SearchMessages(c *gin.Context) {
 	var searchDTO *kdto.Search
 	ctx, loggedUser := middleware.GetLoggedUser(c)
 
-	messages, err := m.messageService.SearchMessages(ctx, loggedUser, searchDTO)
+	allMsg, err := m.messageService.SearchMessages(ctx, loggedUser, searchDTO)
 	if err != nil {
 		httprest.Error(c, "Error find messages")
 		return
 	}
-	httprest.Ok(c, messages)
+	httprest.Ok(c, allMsg)
 }

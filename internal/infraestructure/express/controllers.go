@@ -29,7 +29,7 @@ func NewKeeperController(ctx context.Context, engine *gin.Engine) {
 		keeperControllers = &controllers{
 			engine:              engine,
 			clientController:    controller.NewClient(),
-			messageController:   controller.NewMessages(),
+			messageController:   controller.NewMessages(ctx),
 			authController:      controller.NewAuth(),
 			campaignController:  controller.NewCampaign(ctx),
 			variablesController: controller.NewVariable(ctx),
