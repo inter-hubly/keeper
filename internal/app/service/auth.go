@@ -15,7 +15,7 @@ import (
 )
 
 type Authenticate interface {
-	Login(ctx context.Context, searchDto *kdto.Login) (string, error)
+	Login(ctx context.Context, searchDto *kdto.Login) (*kdto.Authenticate, error)
 	CreateUser(ctx context.Context, searchDto *kdto.User) error
 }
 
@@ -37,24 +37,28 @@ func NewAuthenticate() *authService {
 	return service
 }
 
-func (s *authService) Login(ctx context.Context, login *kdto.Login) (string, error) {
-	hlog.Error(ctx, "authService.Login", fmt.Sprintf("User :%s make one login", login.Username))
+func (s *authService) Login(ctx context.Context, login *kdto.Login) (*kdto.Authenticate, error) {
+	hlog.Debug(ctx, "authService.Login", fmt.Sprintf("User :%s make one login", login.Username))
 	userDb, err := s.userRepository.GetUserByUsername(ctx, login.Username)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	if !strings.HasPrefix(login.Password, "exp-") {
 		if err = config.CheckHashPassword(login.Password, userDb.Password); err != nil {
-			return "", err
+			return nil, err
 		}
 	}
 
 	token, err := config.GenerateBearerToken(ctx, userDb.Name, userDb.Id, userDb.TenantId)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return token, nil
+
+	return &kdto.Authenticate{
+		AccessToken: token,
+		TenantId:    userDb.TenantId,
+	}, nil
 }
 
 func (s *authService) CreateUser(ctx context.Context, userDto *kdto.User) error {

@@ -47,13 +47,7 @@ func (a *authController) Login(c *gin.Context) {
 		return
 	}
 
-	accessTokenDto := struct {
-		AccessToken string `json:"accessToken"`
-	}{
-		AccessToken: accessToken,
-	}
-
-	httprest.Ok(c, accessTokenDto)
+	httprest.Ok(c, accessToken)
 }
 
 func (a *authController) CreateUser(c *gin.Context) {
