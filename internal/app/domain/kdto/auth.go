@@ -1,4 +1,4 @@
-package dto
+package kdto
 
 type Login struct {
 	Username string `json:"username" binding:"required"`

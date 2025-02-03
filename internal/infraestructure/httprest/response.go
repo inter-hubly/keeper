@@ -26,6 +26,12 @@ func Error(c *gin.Context, msg string) {
 func Ok(c *gin.Context, msg any) {
 	c.JSON(200, msg)
 }
+
 func Created(c *gin.Context, msg any) {
+	if msg == nil {
+		c.Status(201)
+		c.Abort()
+		return
+	}
 	c.JSON(201, msg)
 }

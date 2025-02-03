@@ -14,11 +14,12 @@ type CustomClaims struct {
 	jwt.RegisteredClaims
 }
 
-func GenerateBearerToken(_ context.Context, username, tenantId string) (string, error) {
+func GenerateBearerToken(_ context.Context, username, userId, tenantId string) (string, error) {
 	claims := CustomClaims{
 		LoggedUser: hctx.Logged{
 			Username: username,
 			Tenant:   tenantId,
+			UserId:   userId,
 		},
 	}
 

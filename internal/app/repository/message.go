@@ -6,13 +6,13 @@ import (
 	"sync"
 
 	"github.com/inter-hubly/keeper/internal/app/domain"
-	"github.com/inter-hubly/keeper/internal/app/domain/dto"
+	"github.com/inter-hubly/keeper/internal/app/domain/kdto"
 	"github.com/inter-hubly/pilot/database/elasticsearch"
 	"github.com/inter-hubly/pilot/hlog"
 )
 
 type Messages interface {
-	GetMessagesByClientId(ctx context.Context, clientId string, searchDto *dto.Search) (map[string]*domain.Conversations, error)
+	GetMessagesByClientId(ctx context.Context, clientId string, searchDto *kdto.Search) (map[string]*domain.Conversations, error)
 }
 
 type messagesRepository struct {
@@ -36,7 +36,7 @@ func NewMessages() *messagesRepository {
 	return repository
 }
 
-func (m *messagesRepository) GetMessagesByClientId(ctx context.Context, ownerId string, searchDto *dto.Search) (map[string]*domain.Conversations, error) {
+func (m *messagesRepository) GetMessagesByClientId(ctx context.Context, ownerId string, searchDto *kdto.Search) (map[string]*domain.Conversations, error) {
 	fields := map[string]interface{}{
 		"size": 100,
 		"query": map[string]interface{}{
@@ -60,7 +60,6 @@ func (m *messagesRepository) GetMessagesByClientId(ctx context.Context, ownerId 
 		return nil, nil
 	}
 	conversations := make(map[string]*domain.Conversations)
-	// response := make([]*domain.Message, 0, len(allMessages.Hits.Hits))
 
 	var foundProfileName bool
 	var conv *domain.Conversations
@@ -81,7 +80,7 @@ func (m *messagesRepository) GetMessagesByClientId(ctx context.Context, ownerId 
 			if msgValue, ok := val["message"].(string); ok {
 				message = msgValue
 			} else {
-				message = val["templateName"].(string)
+				message = val["campaignId"].(string)
 			}
 			var messageId string
 			if msgIdValue, msgIdok := val["messageId"].(string); msgIdok {
@@ -96,7 +95,7 @@ func (m *messagesRepository) GetMessagesByClientId(ctx context.Context, ownerId 
 			conv.Messages = append(conv.Messages, singleMessage)
 			if !foundProfileName {
 				if profileNameString, ok := val["profileName"].(string); ok {
-					conv.ProfileName = profileNameString
+					conv.WhatsAppProfileName = profileNameString
 					foundProfileName = true
 				}
 			}

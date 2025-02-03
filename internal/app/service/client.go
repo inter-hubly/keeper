@@ -18,13 +18,12 @@ type clientService struct {
 	clientRepository repository.Client
 }
 
+var (
+	clientServiceOnce sync.Once
+	client            *clientService
+)
+
 func NewClient() *clientService {
-
-	var (
-		clientServiceOnce sync.Once
-		client            *clientService
-	)
-
 	clientServiceOnce.Do(func() {
 		client = &clientService{
 			clientRepository: repository.NewClient(),

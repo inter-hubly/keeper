@@ -1,6 +1,7 @@
 package express
 
 import (
+	"context"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -14,19 +15,25 @@ var (
 )
 
 type controllers struct {
-	engine            *gin.Engine
-	clientController  controller.Client
-	messageController controller.Messages
-	authController    controller.Auth
+	engine              *gin.Engine
+	clientController    controller.Client
+	messageController   controller.Messages
+	authController      controller.Auth
+	campaignController  controller.Campaign
+	variablesController controller.Variables
+	contactController   controller.Contact
 }
 
-func NewKeeperController(engine *gin.Engine) {
+func NewKeeperController(ctx context.Context, engine *gin.Engine) {
 	controllersOnce.Do(func() {
 		keeperControllers = &controllers{
-			engine:            engine,
-			clientController:  controller.NewClient(),
-			messageController: controller.NewMessages(),
-			authController:    controller.NewAuth(),
+			engine:              engine,
+			clientController:    controller.NewClient(),
+			messageController:   controller.NewMessages(ctx),
+			authController:      controller.NewAuth(),
+			campaignController:  controller.NewCampaign(ctx),
+			variablesController: controller.NewVariable(ctx),
+			contactController:   controller.NewContact(ctx),
 		}
 	})
 	keeperControllers.startControllers()
@@ -45,6 +52,22 @@ func (c *controllers) startControllers() {
 	}
 	{
 		messageGroup := apiGroup.Group("/messages").Use(middleware.AuthMiddleware())
-		messageGroup.POST("/search", c.messageController.SearchMessages)
+		messageGroup.GET("/search", c.messageController.SearchMessages)
+	}
+	{
+		campaignGroup := apiGroup.Group("/campaign").Use(middleware.AuthMiddleware())
+		campaignGroup.POST("/:campaignId/start", c.campaignController.StartCampaign)
+		campaignGroup.GET("", c.campaignController.GetCampaign)
+		campaignGroup.POST("", c.campaignController.SaveCampaign)
+	}
+	{
+		variablesGroup := apiGroup.Group("/variables").Use(middleware.AuthMiddleware())
+		variablesGroup.GET("", c.variablesController.GetVariables)
+		variablesGroup.POST("", c.variablesController.SaveManyVariable)
+	}
+	{
+		contactGroup := apiGroup.Group("/contact").Use(middleware.AuthMiddleware())
+		contactGroup.GET("", c.contactController.FindContacts)
+		contactGroup.POST("", c.contactController.SaveContact)
 	}
 }
