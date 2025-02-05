@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -23,11 +24,11 @@ var (
 	auth               *authController
 )
 
-func NewAuth() *authController {
+func NewAuth(ctx context.Context) *authController {
 
 	authControllerOnce.Do(func() {
 		auth = &authController{
-			authService: service.NewAuthenticate(),
+			authService: service.NewAuthenticate(ctx),
 		}
 	})
 	return auth
@@ -37,7 +38,7 @@ func (a *authController) Login(c *gin.Context) {
 	var login kdto.Login
 
 	if err := c.BindJSON(&login); err != nil {
-		httprest.Error(c, "Error when marshal login")
+		httprest.Error(c, "Error when marshal body")
 		return
 	}
 
@@ -54,7 +55,7 @@ func (a *authController) CreateUser(c *gin.Context) {
 	var user kdto.User
 
 	if err := c.BindJSON(&user); err != nil {
-		httprest.Error(c, "Error when marshal login")
+		httprest.Error(c, "Error when marshal body")
 		return
 	}
 

@@ -28,9 +28,9 @@ func NewKeeperController(ctx context.Context, engine *gin.Engine) {
 	controllersOnce.Do(func() {
 		keeperControllers = &controllers{
 			engine:              engine,
-			clientController:    controller.NewClient(),
+			clientController:    controller.NewClient(ctx),
 			messageController:   controller.NewMessages(ctx),
-			authController:      controller.NewAuth(),
+			authController:      controller.NewAuth(ctx),
 			campaignController:  controller.NewCampaign(ctx),
 			variablesController: controller.NewVariable(ctx),
 			contactController:   controller.NewContact(ctx),
@@ -43,11 +43,12 @@ func (c *controllers) startControllers() {
 	apiGroup := c.engine.Group("/api")
 	{
 		apiGroup.POST("/login", c.authController.Login)
-		apiGroup.POST("/sign-up", c.authController.CreateUser)
+		// apiGroup.POST("/sign-up", c.authController.CreateUser)
 	}
 	{
 
 		clientGroup := apiGroup.Group("/client").Use(middleware.AuthMiddleware())
+		clientGroup.POST("", c.clientController.SaveClient)
 		clientGroup.GET("/phone-number-id", c.clientController.GetClientPhoneNumberId)
 	}
 	{

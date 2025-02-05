@@ -2,59 +2,61 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"sync"
 
 	"github.com/inter-hubly/pilot/database/pgsql"
-	"github.com/inter-hubly/pilot/domain/valueobject"
+	"github.com/inter-hubly/pilot/domain/entity"
 	"github.com/inter-hubly/pilot/hlog"
 )
 
 type User interface {
-	GetUserByUsername(ctx context.Context, emailUser string) (*valueobject.User, error)
-	SaveUser(ctx context.Context, user *valueobject.User) error
+	GetUserByUsername(ctx context.Context, emailUser string) (*entity.User, error)
+	SaveUser(ctx context.Context, user *entity.User) error
+	UpdateClientInUser(ctx context.Context, clientId, userId string) error
 }
 
 type userRepository struct {
 	connection pgsql.SqlConn
 }
 
-func NewUser() *userRepository {
+var (
+	userRepositoryOnce sync.Once
+	user               *userRepository
+)
 
-	var (
-		userOnce   sync.Once
-		repository *userRepository
-	)
+func NewUser(ctx context.Context) *userRepository {
 
-	userOnce.Do(func() {
-		repository = &userRepository{
+	userRepositoryOnce.Do(func() {
+		user = &userRepository{
 			connection: pgsql.GetConnection(),
 		}
 	})
-	return repository
+	return user
 }
 
-func (r *userRepository) GetUserByUsername(ctx context.Context, userEmail string) (*valueobject.User, error) {
-	query := `SELECT u.id, u.name, u.email, u.password, u.client_id, u.login_attempt, u.created_at, u.updated_at, c.phone_number_Id 
-          FROM "user" u left join client c on c.id = u.client_id
-          WHERE u.email = $1`
+func (r *userRepository) GetUserByUsername(ctx context.Context, userEmail string) (*entity.User, error) {
+	hlog.Debug(ctx, "userRepository.GetUserByUsername", userEmail)
+	query := `SELECT u.id, u.name, u.email, u.password, u.login_attempt, u.tenant_id, u.created_at, u.updated_at
+          FROM "user" u WHERE u.email = $1`
 
 	queryExec, err := r.connection.Query(query, userEmail)
 	if err != nil {
 		hlog.Error(ctx, "userRepository.GetUserByUsername", fmt.Sprintf("error find UserEmail %s : %s", userEmail, err))
 		return nil, err
 	}
-	var userDb valueobject.User
+	var userDb entity.User
+	var tenantID sql.NullString
 	if err = queryExec.Scan(
 		&userDb.Id,
 		&userDb.Name,
 		&userDb.Email,
 		&userDb.Password,
-		&userDb.ClientId,
 		&userDb.LoginAttempt,
+		&tenantID,
 		&userDb.CreatedAt,
 		&userDb.UpdatedAt,
-		&userDb.TenantId,
 	); err != nil {
 		hlog.Error(ctx, "userRepository.GetUserByUsername", fmt.Sprintf("error scan UserEmail %s : %s", userEmail, err))
 		return nil, err
@@ -62,7 +64,8 @@ func (r *userRepository) GetUserByUsername(ctx context.Context, userEmail string
 	return &userDb, nil
 }
 
-func (r *userRepository) SaveUser(ctx context.Context, user *valueobject.User) error {
+func (r *userRepository) SaveUser(ctx context.Context, user *entity.User) error {
+	hlog.Debug(ctx, "userRepository.UpdateClientInUser", fmt.Sprintf("save User %+v", user))
 	query := `
 		INSERT INTO "user" (name, email, password, login_attempt, created_at, updated_at) 
 		VALUES ($1, $2, $3, $4, $5, $6)`
@@ -78,5 +81,15 @@ func (r *userRepository) SaveUser(ctx context.Context, user *valueobject.User) e
 		return err
 	}
 
+	return nil
+}
+
+func (r *userRepository) UpdateClientInUser(ctx context.Context, tenantId, userId string) error {
+	hlog.Debug(ctx, "userRepository.UpdateClientInUser", fmt.Sprintf(" Set tenantId: %s and UserId: %s", tenantId, userId))
+	query := `UPDATE "user" SET tenant_id = $1 WHERE id = $2`
+	if _, err := r.connection.Exec(query, tenantId, userId); err != nil {
+		hlog.Error(ctx, "userRepository.UpdateClientInUser", fmt.Sprintf("update User Error : %s", err))
+		return err
+	}
 	return nil
 }

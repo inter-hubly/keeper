@@ -10,7 +10,7 @@ import (
 	"github.com/inter-hubly/keeper/internal/app/domain/kdto"
 	"github.com/inter-hubly/keeper/internal/app/repository"
 	"github.com/inter-hubly/keeper/internal/infraestructure/config"
-	"github.com/inter-hubly/pilot/domain/valueobject"
+	"github.com/inter-hubly/pilot/domain/entity"
 	"github.com/inter-hubly/pilot/hlog"
 )
 
@@ -20,7 +20,8 @@ type Authenticate interface {
 }
 
 type authService struct {
-	userRepository repository.User
+	userRepository   repository.User
+	clientRepository repository.Client
 }
 
 var (
@@ -28,10 +29,11 @@ var (
 	service     *authService
 )
 
-func NewAuthenticate() *authService {
+func NewAuthenticate(ctx context.Context) *authService {
 	serviceOnce.Do(func() {
 		service = &authService{
-			userRepository: repository.NewUser(),
+			userRepository:   repository.NewUser(ctx),
+			clientRepository: repository.NewClient(ctx),
 		}
 	})
 	return service
@@ -63,7 +65,7 @@ func (s *authService) Login(ctx context.Context, login *kdto.Login) (*kdto.Authe
 
 func (s *authService) CreateUser(ctx context.Context, userDto *kdto.User) error {
 	hlog.Error(ctx, "authService.CreateUser", fmt.Sprintf("Create user: %s", userDto.Name))
-	var user valueobject.User
+	var user entity.User
 
 	user.Name = userDto.Name
 	if hashPass, err := config.HashPassword(userDto.Password); err == nil {

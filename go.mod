@@ -3,12 +3,13 @@ module github.com/inter-hubly/keeper
 go 1.23.1
 
 //replace github.com/inter-hubly/pilot => /Users/saimonribeirosilva/Hubly/pilot // Mac
-//replace github.com/inter-hubly/pilot => /home/saimon/Documents/Hubly/pilot //Linux
+replace github.com/inter-hubly/pilot => /home/saimon/Documents/Hubly/pilot //Linux
 
 require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/golang-jwt/jwt/v4 v4.5.1
 	github.com/inter-hubly/pilot v0.1.3
+	go.mongodb.org/mongo-driver v1.17.2
 	golang.org/x/crypto v0.26.0
 )
 
@@ -56,7 +57,6 @@ require (
 	github.com/xdg-go/scram v1.1.2 // indirect
 	github.com/xdg-go/stringprep v1.0.4 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 // indirect
-	go.mongodb.org/mongo-driver v1.17.2 // indirect
 	go.opentelemetry.io/otel v1.28.0 // indirect
 	go.opentelemetry.io/otel/metric v1.28.0 // indirect
 	go.opentelemetry.io/otel/trace v1.28.0 // indirect
