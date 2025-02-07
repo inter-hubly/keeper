@@ -45,12 +45,10 @@ ON CONFLICT (email) DO NOTHING;
 
 INSERT INTO "user" (name, email, password, login_attempt, created_at,
                     updated_at, tenant_id)
-VALUES ('Fabiane', 'fabiane@test.com', '12345', 0, CURRENT_DATE, CURRENT_DATE,
-        (SELECT tenant_id FROM client WHERE email = 'guimaraes@staziaki.com'))
+VALUES ('Fabiane', 'fabiane@test.com', '12345', 0, CURRENT_DATE, CURRENT_DATE)
 ON CONFLICT (email) DO NOTHING;
 
 INSERT INTO "user" (name, email, password, login_attempt, created_at,
                     updated_at, tenant_id)
-VALUES ('Saimon', 'saimon@test.com', '12345', 0, CURRENT_DATE, CURRENT_DATE,
-        (SELECT tenant_id FROM client WHERE email = 'hubly@teste.com'))
+VALUES ('Saimon', 'saimon@test.com', '12345', 0, CURRENT_DATE, CURRENT_DATE)
 ON CONFLICT (email) DO NOTHING;

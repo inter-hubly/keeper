@@ -61,6 +61,9 @@ func (r *userRepository) GetUserByUsername(ctx context.Context, userEmail string
 		hlog.Error(ctx, "userRepository.GetUserByUsername", fmt.Sprintf("error scan UserEmail %s : %s", userEmail, err))
 		return nil, err
 	}
+	if tenantID.Valid {
+		userDb.TenantId = tenantID.String
+	}
 	return &userDb, nil
 }
 
