@@ -5,11 +5,14 @@ import (
 	"sync"
 
 	"github.com/gin-gonic/gin"
+	"github.com/inter-hubly/keeper/internal/app/domain/kdto"
 	"github.com/inter-hubly/keeper/internal/app/service"
+	"github.com/inter-hubly/keeper/internal/infraestructure/httprest"
+	"github.com/inter-hubly/keeper/internal/infraestructure/middleware"
 )
 
 type Templates interface {
-	Get(c *gin.Context)
+	Save(c *gin.Context)
 }
 
 var (
@@ -30,6 +33,13 @@ func NewTemplate(ctx context.Context) *templateController {
 	return templates
 }
 
-func (t *templateController) Get(c *gin.Context) {
+func (t *templateController) Save(c *gin.Context) {
+	var templateDto kdto.Template
+	ctx, loggedUser := middleware.GetLoggedUser(c)
+	if err := c.BindJSON(&templateDto); err != nil {
+		httprest.Error(c, "Error when marshal body")
+		return
+	}
 
+	t.templateService.Save(ctx, loggedUser, templateDto)
 }

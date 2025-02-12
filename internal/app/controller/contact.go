@@ -41,7 +41,7 @@ func (cc *contactController) SaveContact(c *gin.Context) {
 	var contactDto kdto.Contact
 
 	if err := c.BindJSON(&contactDto); err != nil {
-		httprest.Error(c, "Error when marshal login")
+		httprest.Error(c, "Error when marshal body")
 		return
 	}
 

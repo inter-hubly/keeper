@@ -22,6 +22,7 @@ type controllers struct {
 	campaignController  controller.Campaign
 	variablesController controller.Variables
 	contactController   controller.Contact
+	templateController  controller.Templates
 }
 
 func NewKeeperController(ctx context.Context, engine *gin.Engine) {
@@ -34,6 +35,7 @@ func NewKeeperController(ctx context.Context, engine *gin.Engine) {
 			campaignController:  controller.NewCampaign(ctx),
 			variablesController: controller.NewVariable(ctx),
 			contactController:   controller.NewContact(ctx),
+			templateController:  controller.NewTemplate(ctx),
 		}
 	})
 	keeperControllers.startControllers()
@@ -70,5 +72,9 @@ func (c *controllers) startControllers() {
 		contactGroup := apiGroup.Group("/contact").Use(middleware.AuthMiddleware())
 		contactGroup.GET("", c.contactController.FindContacts)
 		contactGroup.POST("", c.contactController.SaveContact)
+	}
+	{
+		templateGroup := apiGroup.Group("/template").Use(middleware.AuthMiddleware())
+		templateGroup.POST("", c.templateController.Save)
 	}
 }
