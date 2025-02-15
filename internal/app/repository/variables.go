@@ -40,15 +40,15 @@ func NewVariables(ctx context.Context) *variableRepository {
 	return variable
 }
 
-func (r *variableRepository) SaveVariable(ctx context.Context, variable *domain.Variables) (*domain.Variables, error) {
+func (r *variableRepository) SaveVariable(ctx context.Context, domainVariable *domain.Variables) (*domain.Variables, error) {
 	hlog.Debug(ctx, "variableRepository.SaveVariable", "saving one variable")
-	insertId, err := r.connection.GetCollection(ctx, r.collection).InsertOne(ctx, variable)
+	insertId, err := r.connection.GetCollection(ctx, r.collection).InsertOne(ctx, domainVariable)
 	if err != nil {
 		return nil, err
 	}
 	id := insertId.InsertedID
-	variable.Id = id.(primitive.ObjectID).Hex()
-	return variable, nil
+	domainVariable.Id = id.(primitive.ObjectID).Hex()
+	return domainVariable, nil
 }
 
 func (r *variableRepository) SaveManyVariables(ctx context.Context, variables *domain.Variables) error {
