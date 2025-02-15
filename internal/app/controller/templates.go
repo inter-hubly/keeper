@@ -2,10 +2,10 @@ package controller
 
 import (
 	"context"
+	"github.com/inter-hubly/keeper/internal/app/domain"
 	"sync"
 
 	"github.com/gin-gonic/gin"
-	"github.com/inter-hubly/keeper/internal/app/domain/kdto"
 	"github.com/inter-hubly/keeper/internal/app/mediator"
 	"github.com/inter-hubly/keeper/internal/infraestructure/httprest"
 	"github.com/inter-hubly/keeper/internal/infraestructure/middleware"
@@ -34,12 +34,12 @@ func NewTemplate(ctx context.Context) *templateController {
 }
 
 func (t *templateController) Save(c *gin.Context) {
-	var templateDto kdto.Template
+	var templateDto domain.Template
 	ctx, loggedUser := middleware.GetLoggedUser(c)
 	if err := c.BindJSON(&templateDto); err != nil {
 		httprest.Error(c, "Error when marshal body")
 		return
 	}
 
-	t.templateMediator.Save(ctx, loggedUser, templateDto)
+	t.templateMediator.Save(ctx, loggedUser, &templateDto)
 }

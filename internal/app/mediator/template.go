@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"github.com/inter-hubly/keeper/internal/app/domain"
-	"github.com/inter-hubly/keeper/internal/app/domain/kdto"
 	"github.com/inter-hubly/keeper/internal/app/gateway"
 	"github.com/inter-hubly/keeper/internal/app/repository"
 	"github.com/inter-hubly/pilot/hctx"
@@ -14,7 +13,7 @@ import (
 )
 
 type Template interface {
-	Save(ctx context.Context, user *hctx.Logged, dto *kdto.Template) (*domain.Template, error)
+	Save(ctx context.Context, user *hctx.Logged, dto *domain.Template) (*domain.Template, error)
 }
 
 var (
@@ -37,7 +36,7 @@ func NewTemplate(ctx context.Context) *templateMediator {
 	return template
 }
 
-func (t *templateMediator) Save(ctx context.Context, user *hctx.Logged, templateDomain *kdto.Template) (*domain.Template, error) {
+func (t *templateMediator) Save(ctx context.Context, user *hctx.Logged, templateDomain *domain.Template) (*domain.Template, error) {
 	hlog.Debug(ctx, "templateMediator.Save", fmt.Sprintf("%s", templateDomain))
 
 	t.whatsAppGateway.CreateTemplate(ctx, templateDomain)

@@ -9,16 +9,17 @@ const (
 )
 
 type Template struct {
-	Id              string `bson:"id"`
-	Name            string `bson:"name"`
-	Category        string `bson:"category"`
-	ParameterFormat string `bson:"parameter_format"`
-	Language        string `bson:"language"`
+	Id              string       `json:"id" bson:"_id"`
+	Name            string       `json:"name" bson:"name"`
+	Category        string       `json:"category" bson:"category"`
+	ParameterFormat string       `json:"parameterFormat" bson:"parameter_format"`
+	Language        string       `json:"language" bson:"language"`
+	Components      []Components `json:"components" bson:"components"`
 }
 
 type Components struct {
-	Type    TemplateType             `bson:"type"`
-	Format  string                   `bson:"format"`
-	Text    string                   `bson:"text"`
-	Example map[string][]interface{} `bson:"example"`
+	Type    TemplateType             `json:"type" bson:"type"`
+	Format  string                   `json:"format" bson:"format"`
+	Text    string                   `json:"text" bson:"text"`
+	Example map[string][]interface{} `json:"example" bson:"example"`
 }
