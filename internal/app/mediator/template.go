@@ -8,6 +8,7 @@ import (
 	"github.com/inter-hubly/keeper/internal/app/domain"
 	"github.com/inter-hubly/keeper/internal/app/gateway"
 	"github.com/inter-hubly/keeper/internal/app/repository"
+	"github.com/inter-hubly/pilot/domain/base"
 	"github.com/inter-hubly/pilot/hctx"
 	"github.com/inter-hubly/pilot/hlog"
 )
@@ -17,8 +18,8 @@ type Template interface {
 }
 
 var (
-	templateMediatorOnce sync.Once
-	template             *templateMediator
+	_templateMediatorOnce sync.Once
+	_template             *templateMediator
 )
 
 type templateMediator struct {
@@ -27,20 +28,21 @@ type templateMediator struct {
 }
 
 func NewTemplate(ctx context.Context) *templateMediator {
-	templateMediatorOnce.Do(func() {
-		template = &templateMediator{
+	_templateMediatorOnce.Do(func() {
+		_template = &templateMediator{
 			templateRepository: repository.NewTemplate(ctx),
 			whatsAppGateway:    gateway.NewWhatsApp(ctx),
 		}
 	})
-	return template
+	return _template
 }
 
 func (t *templateMediator) Save(ctx context.Context, user *hctx.Logged, templateDomain *domain.Template) (*domain.Template, error) {
-	hlog.Debug(ctx, "templateMediator.Save", fmt.Sprintf("%s", templateDomain))
+	hlog.Debug(ctx, "templateMediator.Save", fmt.Sprint(templateDomain))
 
 	t.whatsAppGateway.CreateTemplate(ctx, templateDomain)
 
+	templateDomain.Entity = base.NewBaseEntity(ctx, user)
 	saveTemplate, err := t.templateRepository.SaveTemplate(ctx, user, templateDomain)
 	if err != nil {
 		hlog.Error(ctx, "templateMediator.Save", fmt.Sprintf("%s", err))

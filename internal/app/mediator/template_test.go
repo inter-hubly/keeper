@@ -10,6 +10,7 @@ import (
 	"github.com/inter-hubly/keeper/internal/app/gateway"
 	"github.com/inter-hubly/keeper/internal/app/repository"
 	"github.com/inter-hubly/pilot/database/hmongo"
+	"github.com/inter-hubly/pilot/hctx"
 	"github.com/inter-hubly/pilot/testutils"
 	"github.com/stretchr/testify/assert"
 )
@@ -39,6 +40,11 @@ func TestTemplateMediator(t *testing.T) {
 		hmongo.WithDatabase("test"),
 		hmongo.WithUrl(host),
 	)
+	logged := hctx.Logged{
+		UserId: "userTest",
+		Tenant: "tenantTest",
+	}
+	ctx = hctx.LoggedUser.New(logged)
 
 	mediator := templateMediator{
 		templateRepository: repository.NewTemplate(ctx),
@@ -53,7 +59,7 @@ func TestTemplateMediator(t *testing.T) {
 			return
 		}
 
-		save, err := mediator.Save(ctx, nil, &myDto)
+		save, err := mediator.Save(ctx, &logged, &myDto)
 		assert.NotEmpty(t, save)
 		assert.Nil(t, err)
 	})

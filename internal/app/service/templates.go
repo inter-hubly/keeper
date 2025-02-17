@@ -3,15 +3,17 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/inter-hubly/keeper/internal/app/domain"
 	"sync"
 
-	"github.com/inter-hubly/pilot/hctx"
+	"github.com/inter-hubly/keeper/internal/app/domain"
+	"github.com/inter-hubly/keeper/internal/app/repository"
 	"github.com/inter-hubly/pilot/hlog"
+
+	"github.com/inter-hubly/pilot/hctx"
 )
 
 type Template interface {
-	Save(ctx context.Context, user *hctx.Logged, dto domain.Template)
+	FindAll(ctx context.Context, user *hctx.Logged) ([]domain.Template, error)
 }
 
 var (
@@ -20,15 +22,19 @@ var (
 )
 
 type templateService struct {
+	templateRepository repository.Template
 }
 
 func NewTemplate(ctx context.Context) *templateService {
 	templateServiceOnce.Do(func() {
-		template = &templateService{}
+		template = &templateService{
+			templateRepository: repository.NewTemplate(ctx),
+		}
 	})
 	return template
 }
 
-func (s *templateService) Save(ctx context.Context, user *hctx.Logged, dtoTemplate domain.Template) {
-	hlog.Debug(ctx, "templateService.Save", fmt.Sprint("create template", dtoTemplate))
+func (s *templateService) FindAll(ctx context.Context, user *hctx.Logged) ([]domain.Template, error) {
+	hlog.Debug(ctx, "templateService.FindAll", fmt.Sprintf("Find All Templates %s", user))
+	return s.templateRepository.FindAll(ctx, user)
 }

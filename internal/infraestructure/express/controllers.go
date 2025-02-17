@@ -76,5 +76,6 @@ func (c *controllers) startControllers() {
 	{
 		templateGroup := apiGroup.Group("/template").Use(middleware.AuthMiddleware())
 		templateGroup.POST("", c.templateController.Save)
+		templateGroup.GET("/search", c.templateController.FindAll)
 	}
 }

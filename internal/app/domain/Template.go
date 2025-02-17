@@ -1,5 +1,7 @@
 package domain
 
+import "github.com/inter-hubly/pilot/domain/base"
+
 type TemplateType string
 
 const (
@@ -9,12 +11,13 @@ const (
 )
 
 type Template struct {
-	Id              string       `json:"id" bson:"_id"`
+	Id              string       `json:"id,omitempty" bson:"_id,omitempty"`
 	Name            string       `json:"name" bson:"name"`
 	Category        string       `json:"category" bson:"category"`
-	ParameterFormat string       `json:"parameterFormat" bson:"parameter_format"`
+	ParameterFormat string       `json:"parameterFormat" bson:"parameter_format,omitempty"`
 	Language        string       `json:"language" bson:"language"`
 	Components      []Components `json:"components" bson:"components"`
+	base.Entity     `json:"-,inline" bson:"-,inline"`
 }
 
 type Components struct {

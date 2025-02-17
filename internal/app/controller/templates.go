@@ -2,8 +2,10 @@ package controller
 
 import (
 	"context"
-	"github.com/inter-hubly/keeper/internal/app/domain"
 	"sync"
+
+	"github.com/inter-hubly/keeper/internal/app/domain"
+	"github.com/inter-hubly/keeper/internal/app/service"
 
 	"github.com/gin-gonic/gin"
 	"github.com/inter-hubly/keeper/internal/app/mediator"
@@ -13,6 +15,7 @@ import (
 
 type Templates interface {
 	Save(c *gin.Context)
+	FindAll(c *gin.Context)
 }
 
 var (
@@ -22,12 +25,14 @@ var (
 
 type templateController struct {
 	templateMediator mediator.Template
+	templateService  service.Template
 }
 
 func NewTemplate(ctx context.Context) *templateController {
 	templatesControllerOnce.Do(func() {
 		templates = &templateController{
 			templateMediator: mediator.NewTemplate(ctx),
+			templateService:  service.NewTemplate(ctx),
 		}
 	})
 	return templates
@@ -40,6 +45,20 @@ func (t *templateController) Save(c *gin.Context) {
 		httprest.Error(c, "Error when marshal body")
 		return
 	}
+	savedValue, err := t.templateMediator.Save(ctx, loggedUser, &templateDto)
+	if err != nil {
+		httprest.Error(c, "Error when save template")
+		return
+	}
+	httprest.Created(c, savedValue)
+}
 
-	t.templateMediator.Save(ctx, loggedUser, &templateDto)
+func (t *templateController) FindAll(c *gin.Context) {
+	ctx, loggedUser := middleware.GetLoggedUser(c)
+	all, err := t.templateService.FindAll(ctx, loggedUser)
+	if err != nil {
+		httprest.Error(c, "Error when find all templates")
+		return
+	}
+	httprest.Ok(c, all)
 }
