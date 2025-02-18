@@ -7,7 +7,7 @@ type TemplateType string
 const (
 	Header TemplateType = "HEADER"
 	Body   TemplateType = "BODY"
-	Footer TemplateType = "footer"
+	Footer TemplateType = "FOOTER"
 )
 
 type Template struct {
@@ -16,6 +16,8 @@ type Template struct {
 	Category        string       `json:"category" bson:"category"`
 	ParameterFormat string       `json:"parameterFormat" bson:"parameter_format,omitempty"`
 	Language        string       `json:"language" bson:"language"`
+	Status          string       `json:"status" bson:"status"`
+	ResponseId      string       `json:"responseId" bson:"response_id"`
 	Components      []Components `json:"components" bson:"components"`
 	base.Entity     `json:"-,inline" bson:"-,inline"`
 }

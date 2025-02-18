@@ -48,6 +48,7 @@ func (w *whatsAppGateway) CreateTemplate(ctx context.Context, message *domain.Te
 
 	if err = request.CreateRequest(ctx, http.MethodPost); err != nil {
 		hlog.Error(ctx, "whatsAppGateway.CreateTemplate", err.Error())
+		return nil, err
 	}
 	var resp kdto.WhatsAppTemplateResponse
 	if err = request.GetBody(ctx, &resp); err != nil {
