@@ -16,7 +16,7 @@ import (
 type Variables interface {
 	SaveVariables(ctx context.Context, logged *hctx.Logged, variableDto *kdto.Variable) error
 	SaveManyVariables(ctx context.Context, logged *hctx.Logged, variableDto []kdto.Variable) error
-	GetVariables(ctx context.Context) ([]kdto.Variable, error)
+	SearchVariables(ctx context.Context) ([]kdto.Variable, error)
 }
 
 type variablesService struct {
@@ -78,7 +78,7 @@ func (v *variablesService) SaveManyVariables(ctx context.Context, logged *hctx.L
 	return nil
 }
 
-func (v *variablesService) GetVariables(ctx context.Context) ([]kdto.Variable, error) {
+func (v *variablesService) SearchVariables(ctx context.Context) ([]kdto.Variable, error) {
 	hlog.Debug(ctx, "variablesService.GetVariables", "getting variables")
 	getVariables, err := v.variableRepository.GetVariables(ctx)
 	if err != nil {

@@ -13,7 +13,7 @@ import (
 )
 
 type Template interface {
-	FindAll(ctx context.Context, user *hctx.Logged) ([]domain.Template, error)
+	SearchTemplates(ctx context.Context, user *hctx.Logged) ([]domain.Template, error)
 }
 
 var (
@@ -34,7 +34,7 @@ func NewTemplate(ctx context.Context) *templateService {
 	return template
 }
 
-func (s *templateService) FindAll(ctx context.Context, user *hctx.Logged) ([]domain.Template, error) {
+func (s *templateService) SearchTemplates(ctx context.Context, user *hctx.Logged) ([]domain.Template, error) {
 	hlog.Debug(ctx, "templateService.FindAll", fmt.Sprintf("Find All Templates %s", user))
-	return s.templateRepository.FindAll(ctx, user)
+	return s.templateRepository.SearchTemplates(ctx, user)
 }

@@ -14,7 +14,7 @@ import (
 
 type Contact interface {
 	SaveContact(c *gin.Context)
-	FindContacts(c *gin.Context)
+	SearchContacts(c *gin.Context)
 }
 
 type contactController struct {
@@ -55,10 +55,10 @@ func (cc *contactController) SaveContact(c *gin.Context) {
 	httprest.Created(c, resp)
 }
 
-func (cc *contactController) FindContacts(c *gin.Context) {
+func (cc *contactController) SearchContacts(c *gin.Context) {
 	ctx, loggedUser := middleware.GetLoggedUser(c)
 
-	resp, err := cc.contactService.FindContacts(ctx, loggedUser)
+	resp, err := cc.contactService.SearchContacts(ctx, loggedUser)
 
 	if err != nil {
 		httprest.Error(c, "Error when save variable")

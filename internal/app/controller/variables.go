@@ -12,7 +12,7 @@ import (
 )
 
 type Variables interface {
-	GetVariables(c *gin.Context)
+	SearchVariables(c *gin.Context)
 	SaveVariable(c *gin.Context)
 	SaveManyVariable(c *gin.Context)
 }
@@ -70,10 +70,10 @@ func (v *variableController) SaveManyVariable(c *gin.Context) {
 	httprest.Created(c, nil)
 }
 
-func (v *variableController) GetVariables(c *gin.Context) {
+func (v *variableController) SearchVariables(c *gin.Context) {
 	ctx, _ := middleware.GetLoggedUser(c)
 
-	getVariables, err := v.variablesService.GetVariables(ctx)
+	getVariables, err := v.variablesService.SearchVariables(ctx)
 	if err != nil {
 		httprest.Error(c, "Error when get variables")
 		return

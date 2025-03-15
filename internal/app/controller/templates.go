@@ -15,7 +15,7 @@ import (
 
 type Templates interface {
 	Save(c *gin.Context)
-	FindAll(c *gin.Context)
+	SearchTemplates(c *gin.Context)
 }
 
 var (
@@ -45,6 +45,10 @@ func (t *templateController) Save(c *gin.Context) {
 		httprest.Error(c, "Error when marshal body")
 		return
 	}
+	if templateDto.Language == "" {
+		templateDto.Language = "pt_BR"
+	}
+
 	savedValue, err := t.templateMediator.Save(ctx, loggedUser, &templateDto)
 	if err != nil {
 		httprest.Error(c, "Error when save template")
@@ -53,9 +57,9 @@ func (t *templateController) Save(c *gin.Context) {
 	httprest.Created(c, savedValue)
 }
 
-func (t *templateController) FindAll(c *gin.Context) {
+func (t *templateController) SearchTemplates(c *gin.Context) {
 	ctx, loggedUser := middleware.GetLoggedUser(c)
-	all, err := t.templateService.FindAll(ctx, loggedUser)
+	all, err := t.templateService.SearchTemplates(ctx, loggedUser)
 	if err != nil {
 		httprest.Error(c, "Error when find all templates")
 		return

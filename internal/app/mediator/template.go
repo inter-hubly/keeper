@@ -2,7 +2,10 @@ package mediator
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"regexp"
+	"strings"
 	"sync"
 
 	"github.com/inter-hubly/keeper/internal/app/domain"
@@ -48,12 +51,30 @@ func NewTemplate(ctx context.Context) *templateMediator {
 func (t *templateMediator) Save(ctx context.Context, user *hctx.Logged, templateDomain *domain.Template) (*domain.Template, error) {
 	hlog.Debug(ctx, "templateMediator.Save", fmt.Sprint(templateDomain))
 
+	// for each component, header, body and footer
+	re := regexp.MustCompile(`\{\{([^}]+)\}\}`)
+	for _, v := range templateDomain.Components {
+		matches := re.FindAllStringSubmatch(v.Text, -1)
+
+		if matches != nil {
+			manyExamples := v.Example[strings.ToLower(fmt.Sprintf("%s_text", v.Type))]
+
+			// many examples
+			for _, eachExample := range manyExamples {
+				// need verify each example has the same value then match
+				if len(eachExample) != len(matches) {
+					return nil, errors.New("error when save template")
+				}
+			}
+		}
+
+	}
+
 	gatewayResponse, err := t.whatsAppGateway.CreateTemplate(ctx, templateDomain)
 	if err != nil {
 		hlog.Error(ctx, "templateMediator.Save", err.Error())
 		return nil, err
 	}
-
 	templateDomain.Entity = base.NewBaseEntity(ctx, user)
 	templateDomain.ResponseId = gatewayResponse.Id
 	templateDomain.Status = gatewayResponse.Status

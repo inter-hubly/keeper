@@ -14,7 +14,7 @@ import (
 
 type Template interface {
 	SaveTemplate(ctx context.Context, user *hctx.Logged, dto *domain.Template) (*domain.Template, error)
-	FindAll(ctx context.Context, logged *hctx.Logged) ([]domain.Template, error)
+	SearchTemplates(ctx context.Context, logged *hctx.Logged) ([]domain.Template, error)
 }
 
 var (
@@ -48,7 +48,7 @@ func (t *templateRepository) SaveTemplate(ctx context.Context, user *hctx.Logged
 	return domainTemplate, nil
 }
 
-func (t *templateRepository) FindAll(ctx context.Context, logged *hctx.Logged) ([]domain.Template, error) {
+func (t *templateRepository) SearchTemplates(ctx context.Context, logged *hctx.Logged) ([]domain.Template, error) {
 	hlog.Debug(ctx, "templateRepository.FindAll", "finding all Templates")
 	tenantId := hctx.Tenant.Get(ctx)
 	cur, err := t.connection.GetCollection(ctx, t.collection).Find(ctx, bson.M{
@@ -60,13 +60,10 @@ func (t *templateRepository) FindAll(ctx context.Context, logged *hctx.Logged) (
 	}
 	defer cur.Close(ctx)
 	var templates []domain.Template
-	for cur.Next(ctx) {
-		var tmpl domain.Template
-		if err = cur.Decode(&tmpl); err != nil {
-			hlog.Error(ctx, "templateRepository.FindAll", err.Error())
-			return nil, err
-		}
-		templates = append(templates, tmpl)
+	if err = cur.All(ctx, &templates); err != nil {
+		hlog.Error(ctx, "templateRepository.FindAll", err.Error())
+		return nil, err
 	}
+
 	return templates, nil
 }

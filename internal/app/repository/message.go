@@ -11,6 +11,11 @@ import (
 	"github.com/inter-hubly/pilot/hlog"
 )
 
+var (
+	_messageRepositoryOnce sync.Once
+	_messageRepository     *messagesRepository
+)
+
 type Messages interface {
 	GetMessagesByClientId(ctx context.Context, clientId string, searchDto *kdto.Search) (map[string]*domain.Conversations, error)
 }
@@ -22,18 +27,13 @@ type messagesRepository struct {
 
 func NewMessages() *messagesRepository {
 
-	var (
-		repositoryOnce sync.Once
-		repository     *messagesRepository
-	)
-
-	repositoryOnce.Do(func() {
-		repository = &messagesRepository{
+	_messageRepositoryOnce.Do(func() {
+		_messageRepository = &messagesRepository{
 			elasticIndex: "whatsapp",
 			connection:   elasticsearch.GetConnection(),
 		}
 	})
-	return repository
+	return _messageRepository
 }
 
 func (m *messagesRepository) GetMessagesByClientId(ctx context.Context, ownerId string, searchDto *kdto.Search) (map[string]*domain.Conversations, error) {

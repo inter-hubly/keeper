@@ -22,6 +22,7 @@ type Campaign interface {
 	SaveCampaign(ctx context.Context, loggedUser *hctx.Logged, campaignDto *kdto.Campaign) (*entity.Campaign, error)
 	GetCampaign(ctx context.Context, user *hctx.Logged) (*entity.Campaign, error)
 	StartCampaign(ctx context.Context, user *hctx.Logged, campaignId string) error
+	ListCampaign(ctx context.Context, user *hctx.Logged) ([]entity.Campaign, error)
 }
 
 type campaignService struct {
@@ -140,4 +141,9 @@ func (c *campaignService) containsAllVariables(list1 []domain.SingleVariable, li
 	}
 
 	return true
+}
+
+func (c *campaignService) ListCampaign(ctx context.Context, user *hctx.Logged) ([]entity.Campaign, error) {
+	hlog.Debug(ctx, "campaignService.ListCampaign", fmt.Sprintf("list campaign %s", user.Username))
+	return c.campaignRepository.ListCampaign(ctx)
 }

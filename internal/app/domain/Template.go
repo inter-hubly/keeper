@@ -14,7 +14,7 @@ type Template struct {
 	Id              string       `json:"id,omitempty" bson:"_id,omitempty"`
 	Name            string       `json:"name" bson:"name"`
 	Category        string       `json:"category" bson:"category"`
-	ParameterFormat string       `json:"parameterFormat" bson:"parameter_format,omitempty"`
+	ParameterFormat string       `json:"parameterFormat" bson:"parameterFormat,omitempty"`
 	Language        string       `json:"language" bson:"language"`
 	Status          string       `json:"status" bson:"status"`
 	ResponseId      string       `json:"responseId" bson:"response_id"`
@@ -23,8 +23,8 @@ type Template struct {
 }
 
 type Components struct {
-	Type    TemplateType             `json:"type" bson:"type"`
-	Format  string                   `json:"format" bson:"format"`
-	Text    string                   `json:"text" bson:"text"`
-	Example map[string][]interface{} `json:"example" bson:"example"`
+	Type    TemplateType          `json:"type" bson:"type"`
+	Format  string                `json:"format" bson:"format"`
+	Text    string                `json:"text" bson:"text"`
+	Example map[string][][]string `json:"example,omitempty" bson:"example,omitempty"`
 }
