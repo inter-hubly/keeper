@@ -49,7 +49,9 @@ func (s *messagesService) SearchMessages(ctx context.Context, loggedUser *hctx.L
 		}
 
 		for _, ct := range contacts {
-			msgDb[ct.Phone].LocalProfileName = ct.Name
+			if entry, exists := msgDb[ct.Phone]; exists {
+				entry.LocalProfileName = ct.Name
+			}
 		}
 		return msgDb, nil
 	}
