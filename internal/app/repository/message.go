@@ -17,7 +17,7 @@ var (
 )
 
 type Messages interface {
-	GetMessagesByClientId(ctx context.Context, clientId string, searchDto *kdto.Search) (map[string]*domain.Conversations, error)
+	GetMessagesByClientId(ctx context.Context, clientId string, searchDto *kdto.Search) (map[string]*domain.Conversations, []string, error)
 }
 
 type messagesRepository struct {
@@ -25,18 +25,18 @@ type messagesRepository struct {
 	connection   elasticsearch.ElasticConn
 }
 
-func NewMessages() *messagesRepository {
-
+func NewMessages(ctx context.Context) *messagesRepository {
 	_messageRepositoryOnce.Do(func() {
 		_messageRepository = &messagesRepository{
 			elasticIndex: "whatsapp",
 			connection:   elasticsearch.GetConnection(),
 		}
 	})
+
 	return _messageRepository
 }
 
-func (m *messagesRepository) GetMessagesByClientId(ctx context.Context, ownerId string, searchDto *kdto.Search) (map[string]*domain.Conversations, error) {
+func (m *messagesRepository) GetMessagesByClientId(ctx context.Context, ownerId string, searchDto *kdto.Search) (map[string]*domain.Conversations, []string, error) {
 	fields := map[string]interface{}{
 		"size": 100,
 		"query": map[string]interface{}{
@@ -54,15 +54,19 @@ func (m *messagesRepository) GetMessagesByClientId(ctx context.Context, ownerId 
 	allMessages, err := m.connection.FindAll(ctx, fmt.Sprintf("%s.%s", ownerId, m.elasticIndex), fields)
 	if err != nil {
 		hlog.Error(ctx, "messagesRepository.GetMessagesByClientId", err.Error())
-		return nil, err
+		return nil, nil, err
 	}
 	if allMessages == nil || allMessages.Hits == nil {
-		return nil, nil
+		return nil, nil, nil
 	}
-	conversations := make(map[string]*domain.Conversations)
 
-	var foundProfileName bool
-	var conv *domain.Conversations
+	conversations := make(map[string]*domain.Conversations)
+	manyCampaigns := make([]string, 0, len(allMessages.Hits.Hits))
+
+	var (
+		foundProfileName bool
+		conv             *domain.Conversations
+	)
 
 	for _, elasticSingleResponse := range allMessages.Hits.Hits {
 		if val, ok := elasticSingleResponse.(map[string]interface{})["_source"].(map[string]interface{}); ok {
@@ -80,6 +84,7 @@ func (m *messagesRepository) GetMessagesByClientId(ctx context.Context, ownerId 
 			if msgValue, ok := val["message"].(string); ok {
 				message = msgValue
 			} else {
+				manyCampaigns = append(manyCampaigns, val["campaignId"].(string))
 				message = val["campaignId"].(string)
 			}
 			var messageId string
@@ -90,7 +95,7 @@ func (m *messagesRepository) GetMessagesByClientId(ctx context.Context, ownerId 
 			singleMessage := domain.Message{
 				Id:      messageId,
 				IsOwner: val["isOwner"].(bool),
-				Text:    message,
+				Text:    &message,
 			}
 			conv.Messages = append(conv.Messages, singleMessage)
 			if !foundProfileName {
@@ -131,5 +136,5 @@ func (m *messagesRepository) GetMessagesByClientId(ctx context.Context, ownerId 
 		}
 	}
 
-	return conversations, nil
+	return conversations, manyCampaigns, nil
 }

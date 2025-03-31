@@ -29,6 +29,7 @@ type campaignService struct {
 	campaignRepository repository.Campaign
 	contactRepository  repository.Contact
 	variableRepository repository.Variable
+	templateRepository repository.Template
 	broker             broker.Connection
 }
 
@@ -43,6 +44,7 @@ func NewCampaign(ctx context.Context) *campaignService {
 			campaignRepository: repository.NewCampaign(ctx),
 			contactRepository:  repository.NewContact(ctx),
 			variableRepository: repository.NewVariables(ctx),
+			templateRepository: repository.NewTemplate(ctx),
 			broker:             broker.GetConnection(),
 		}
 	})
@@ -96,13 +98,23 @@ func (c *campaignService) SaveCampaign(ctx context.Context, loggedUser *hctx.Log
 		return nil, errors.New("this phone does not contain this variables")
 	}
 
+	templateEntity, err := c.templateRepository.GetTemplateById(ctx, campaignDto.TemplateId)
+	if err != nil {
+		hlog.Error(ctx, "campaignService.SaveCampaign", fmt.Sprintf("Template Repository Error: %v", err))
+		return nil, err
+	}
 	campaignDb := entity.Campaign{
-		Name:       campaignDto.Name,
-		Template:   campaignDto.Template,
+		Name: campaignDto.Name,
+		Template: base.TemplateInfo{
+			Id:      templateEntity.Id,
+			Name:    templateEntity.Name,
+			Message: templateEntity.GetComponentMessages(),
+		},
 		ContactsId: campaignDto.ContactsID,
 		Variables:  campaignDto.Variables,
 		Entity:     base.NewBaseEntity(ctx, loggedUser),
 	}
+
 	campaign, err := c.campaignRepository.SaveCampaign(ctx, &campaignDb)
 	if err != nil {
 		hlog.Error(ctx, "campaignService.SaveCampaign", fmt.Sprintf("SaveCampaign Error: %v", err))

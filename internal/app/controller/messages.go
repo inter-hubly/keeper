@@ -20,17 +20,17 @@ type messagesController struct {
 }
 
 var (
-	messagesControllerOnce sync.Once
-	messages               *messagesController
+	_messagesControllerOnce sync.Once
+	_messagesController     *messagesController
 )
 
 func NewMessages(ctx context.Context) *messagesController {
-	messagesControllerOnce.Do(func() {
-		messages = &messagesController{
+	_messagesControllerOnce.Do(func() {
+		_messagesController = &messagesController{
 			messageService: service.NewMessages(ctx),
 		}
 	})
-	return messages
+	return _messagesController
 }
 
 func (m *messagesController) SearchMessages(c *gin.Context) {

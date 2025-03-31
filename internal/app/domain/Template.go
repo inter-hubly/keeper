@@ -28,3 +28,11 @@ type Components struct {
 	Text    string                `json:"text" bson:"text"`
 	Example map[string][][]string `json:"example,omitempty" bson:"example,omitempty"`
 }
+
+func (t *Template) GetComponentMessages() string {
+	var resp string
+	for i := range t.Components {
+		resp += t.Components[i].Text + " "
+	}
+	return resp
+}

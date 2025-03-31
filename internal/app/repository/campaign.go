@@ -11,10 +11,13 @@ import (
 	"github.com/inter-hubly/pilot/hlog"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Campaign interface {
 	GetCampaignById(ctx context.Context, campaignId string) (*entity.Campaign, error)
+	GetCampaignsByIds(ctx context.Context, campaignId ...string) ([]entity.Campaign, error)
+	GetCampaignsTemplateById(ctx context.Context, campaignId []string) ([]string, error)
 	SaveCampaign(ctx context.Context, campaign *entity.Campaign) (*entity.Campaign, error)
 	ListCampaign(ctx context.Context) ([]entity.Campaign, error)
 }
@@ -83,6 +86,78 @@ func (c *campaignRepository) ListCampaign(ctx context.Context) ([]entity.Campaig
 	var campaigns []entity.Campaign
 	if err = cur.All(ctx, &campaigns); err != nil {
 		hlog.Error(ctx, "campaignRepository.ListCampaign", fmt.Sprintf("error while list campaign %s", tenantId))
+	}
+	return campaigns, nil
+}
+
+func (c *campaignRepository) GetCampaignsTemplateById(ctx context.Context, campaignId []string) ([]string, error) {
+	hlog.Debug(ctx, "campaignRepository.GetCampaignsById", fmt.Sprintf("campaignId: %s", campaignId))
+	tenantId := hctx.Tenant.Get(ctx)
+	var (
+		campaign []entity.Campaign
+		err      error
+	)
+
+	var objectIDs []primitive.ObjectID
+	for _, id := range campaignId {
+		objID, err := primitive.ObjectIDFromHex(id)
+		if err != nil {
+			hlog.Error(ctx, "campaignRepository.GetCampaignsById", fmt.Sprintf("invalid ObjectId: %s", id))
+			return nil, err
+		}
+		objectIDs = append(objectIDs, objID)
+	}
+
+	cur, err := c.connection.GetCollection(ctx, c.collection).Find(ctx, bson.M{
+		"_id": bson.M{"$in": objectIDs},
+	}, options.Find().SetProjection(
+		bson.M{
+			"template.id": 1,
+			"_id":         0,
+		}))
+
+	if err != nil {
+		hlog.Error(ctx, "campaignRepository.GetCampaign sById", fmt.Sprintf("error while list campaign %s", tenantId))
+		return nil, err
+	}
+	if err = cur.All(ctx, &campaign); err != nil {
+		hlog.Error(ctx, "campaignRepository.GetCampaignsById", fmt.Sprintf("error while list campaign %s", tenantId))
+		return nil, err
+	}
+	var response []string
+	for _, objID := range campaign {
+		response = append(response, objID.Template.Id)
+	}
+	return response, nil
+}
+
+func (c *campaignRepository) GetCampaignsByIds(ctx context.Context, campaignId ...string) ([]entity.Campaign, error) {
+	hlog.Debug(ctx, "campaignRepository.GetCampaignsByIds", fmt.Sprintf("campaignId: %s", campaignId))
+	var (
+		campaigns []entity.Campaign
+		objectIDs []primitive.ObjectID
+	)
+
+	tenantId := hctx.Tenant.Get(ctx)
+	for _, id := range campaignId {
+		objID, err := primitive.ObjectIDFromHex(id)
+		if err != nil {
+			hlog.Error(ctx, "campaignRepository.GetCampaignsById", fmt.Sprintf("invalid ObjectId: %s", id))
+			return nil, err
+		}
+		objectIDs = append(objectIDs, objID)
+	}
+	cur, err := c.connection.GetCollection(ctx, c.collection).Find(ctx, bson.M{
+		"_id":      bson.M{"$in": objectIDs},
+		"tenantId": tenantId,
+	})
+	if err != nil {
+		hlog.Error(ctx, "campaignRepository.GetCampaignsById", fmt.Sprintf("error while list campaign %s", tenantId))
+		return nil, err
+	}
+	if err = cur.All(ctx, &campaigns); err != nil {
+		hlog.Error(ctx, "campaignRepository.GetCampaignsById", fmt.Sprintf("error while list campaign %s", tenantId))
+		return nil, err
 	}
 	return campaigns, nil
 }
