@@ -11,16 +11,23 @@ const (
 )
 
 type Template struct {
-	Id              string       `json:"id,omitempty" bson:"_id,omitempty"`
-	Name            string       `json:"name" bson:"name"`
-	Category        string       `json:"category" bson:"category"`
-	ParameterFormat string       `json:"parameterFormat" bson:"parameterFormat,omitempty"`
-	Language        string       `json:"language" bson:"language"`
-	Status          string       `json:"status" bson:"status"`
-	ResponseId      string       `json:"responseId" bson:"response_id"`
-	Components      []Components `json:"components" bson:"components"`
+	Id              string         `json:"id,omitempty" bson:"_id,omitempty"`
+	Name            string         `json:"name" bson:"name"`
+	Category        string         `json:"category" bson:"category"`
+	ParameterFormat string         `json:"parameterFormat" bson:"parameterFormat,omitempty"`
+	Language        string         `json:"language" bson:"language"`
+	Status          TemplateStatus `json:"status" bson:"status"`
+	ResponseId      string         `json:"responseId" bson:"response_id"`
+	Components      []Components   `json:"components" bson:"components"`
 	base.Entity     `json:"-,inline" bson:"-,inline"`
 }
+
+type TemplateStatus string
+
+const (
+	Approved TemplateStatus = "APPROVED"
+	Rejected TemplateStatus = "REJECTED"
+)
 
 type Components struct {
 	Type    TemplateType          `json:"type" bson:"type"`

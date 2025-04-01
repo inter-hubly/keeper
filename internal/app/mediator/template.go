@@ -77,7 +77,7 @@ func (t *templateMediator) Save(ctx context.Context, user *hctx.Logged, template
 	}
 	templateDomain.Entity = base.NewBaseEntity(ctx, user)
 	templateDomain.ResponseId = gatewayResponse.Id
-	templateDomain.Status = gatewayResponse.Status
+	templateDomain.Status = domain.TemplateStatus(gatewayResponse.Status)
 
 	saveTemplate, err := t.templateRepository.SaveTemplate(ctx, user, templateDomain)
 	if err != nil {
