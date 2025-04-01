@@ -64,7 +64,7 @@ func (w *whatsAppGateway) CreateTemplate(ctx context.Context, message *domain.Te
 			Type: string(component.Type),
 			Text: component.Text,
 		}
-		if len(component.Example) >= 0 {
+		if len(component.Example) > 0 {
 			dto.Example = component.Example
 		}
 		if component.Type == "HEADER" {
