@@ -15,6 +15,7 @@ import (
 	"github.com/inter-hubly/pilot/hctx"
 	"github.com/inter-hubly/pilot/hlog"
 	"github.com/inter-hubly/pilot/server"
+	"github.com/inter-hubly/pilot/util"
 )
 
 type Template interface {
@@ -70,7 +71,9 @@ func (t *templateMediator) Save(ctx context.Context, user *hctx.Logged, template
 
 	}
 
+	templateDomain.Slug = util.ToSlug(templateDomain.Name, true)
 	gatewayResponse, err := t.whatsAppGateway.CreateTemplate(ctx, templateDomain)
+
 	if err != nil {
 		hlog.Error(ctx, "templateMediator.Save", err.Error())
 		return nil, err

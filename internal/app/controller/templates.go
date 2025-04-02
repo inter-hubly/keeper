@@ -49,12 +49,12 @@ func (t *templateController) Save(c *gin.Context) {
 		templateDto.Language = "pt_BR"
 	}
 
-	savedValue, err := t.templateMediator.Save(ctx, loggedUser, &templateDto)
-	if err != nil {
-		httprest.Error(c, "Error when save template")
-		return
-	}
-	httprest.Created(c, savedValue)
+	// TODO adicionar contexto de tempo
+	go func() {
+		t.templateMediator.Save(ctx, loggedUser, &templateDto)
+	}()
+
+	httprest.Created(c, nil)
 }
 
 func (t *templateController) SearchTemplates(c *gin.Context) {

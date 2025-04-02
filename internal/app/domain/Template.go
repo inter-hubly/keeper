@@ -13,6 +13,7 @@ const (
 type Template struct {
 	Id              string         `json:"id,omitempty" bson:"_id,omitempty"`
 	Name            string         `json:"name" bson:"name"`
+	Slug            string         `json:"slug" bson:"slug"`
 	Category        string         `json:"category" bson:"category"`
 	ParameterFormat string         `json:"parameterFormat" bson:"parameterFormat,omitempty"`
 	Language        string         `json:"language" bson:"language"`

@@ -106,9 +106,10 @@ func (c *campaignService) SaveCampaign(ctx context.Context, loggedUser *hctx.Log
 	campaignDb := entity.Campaign{
 		Name: campaignDto.Name,
 		Template: base.TemplateInfo{
-			Id:      templateEntity.Id,
-			Name:    templateEntity.Name,
-			Message: templateEntity.GetComponentMessages(),
+			Id:       templateEntity.Id,
+			Name:     templateEntity.Slug,
+			Language: templateEntity.Language,
+			Message:  templateEntity.GetComponentMessages(),
 		},
 		ContactsId: campaignDto.ContactsID,
 		Variables:  campaignDto.Variables,

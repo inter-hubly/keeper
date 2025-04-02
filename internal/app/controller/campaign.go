@@ -70,7 +70,7 @@ func (ctrl *campaignController) SaveCampaign(c *gin.Context) {
 	var campaignDto kdto.Campaign
 
 	if err := c.BindJSON(&campaignDto); err != nil {
-		httprest.Error(c, "Error when marshal login")
+		httprest.Error(c, "Error when marshal campaign")
 		return
 	}
 	saveCampaign, err := ctrl.campaignService.SaveCampaign(ctx, loggedUser, &campaignDto)

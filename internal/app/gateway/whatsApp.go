@@ -12,7 +12,6 @@ import (
 	"github.com/inter-hubly/pilot/hctx"
 	"github.com/inter-hubly/pilot/hlog"
 	"github.com/inter-hubly/pilot/hrest"
-	"github.com/inter-hubly/pilot/util"
 )
 
 type WhatsApp interface {
@@ -53,7 +52,7 @@ func (w *whatsAppGateway) CreateTemplate(ctx context.Context, message *domain.Te
 		ParameterFormat string         `json:"parameter_format"`
 		Components      []componentDto `json:"components"`
 	}{
-		Name:            util.ToSlug(message.Name, true),
+		Name:            message.Slug,
 		Language:        message.Language,
 		Category:        message.Category,
 		ParameterFormat: message.ParameterFormat,
