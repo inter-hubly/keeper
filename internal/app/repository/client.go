@@ -29,7 +29,7 @@ var (
 func NewClient(ctx context.Context) *clientRepository {
 	clientRepositoryOnce.Do(func() {
 		client = &clientRepository{
-			connection: pgsql.GetConnection(),
+			connection: pgsql.GetConnection(ctx),
 		}
 	})
 	return client

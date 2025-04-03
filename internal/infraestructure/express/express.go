@@ -17,6 +17,7 @@ const ExchangeBroker = "linker"
 func Start(ctx context.Context, engine *gin.Engine) {
 	engine.Use(corsMiddleware())
 	pgsql.NewConnection(
+		ctx,
 		pgsql.WithUrl(server.GetPgsqlConfig().Host),
 	)
 
