@@ -44,7 +44,7 @@ func TestTemplateMediator(t *testing.T) {
 		UserId: "userTest",
 		Tenant: "tenantTest",
 	}
-	ctx = hctx.LoggedUser.New(logged)
+	ctx = hctx.LoggedUser.New(ctx, logged)
 
 	mediator := templateMediator{
 		templateRepository: repository.NewTemplate(ctx),
