@@ -1,6 +1,7 @@
 package kdto
 
 import (
+	"github.com/inter-hubly/pilot/domain/entity"
 	"github.com/inter-hubly/pilot/domain/valueobject"
 )
 
@@ -9,4 +10,5 @@ type Campaign struct {
 	TemplateId string                             `json:"templateId"`
 	ContactsID []string                           `json:"contactsIds"`
 	Variables  []valueobject.Pair[string, string] `json:"variables"`
+	Flows      map[string]*entity.Flow            `json:"flows"`
 }

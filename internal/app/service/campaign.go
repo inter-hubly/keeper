@@ -114,6 +114,7 @@ func (c *campaignService) SaveCampaign(ctx context.Context, loggedUser *hctx.Log
 		ContactsId: campaignDto.ContactsID,
 		Variables:  campaignDto.Variables,
 		Entity:     base.NewBaseEntity(ctx, loggedUser),
+		Flows:      campaignDto.Flows,
 	}
 
 	campaign, err := c.campaignRepository.SaveCampaign(ctx, &campaignDb)
