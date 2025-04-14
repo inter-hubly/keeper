@@ -22,6 +22,7 @@ type controllers struct {
 	campaignController  controller.Campaign
 	variablesController controller.Variables
 	contactController   controller.Contact
+	templateController  controller.Templates
 }
 
 func NewKeeperController(ctx context.Context, engine *gin.Engine) {
@@ -34,6 +35,7 @@ func NewKeeperController(ctx context.Context, engine *gin.Engine) {
 			campaignController:  controller.NewCampaign(ctx),
 			variablesController: controller.NewVariable(ctx),
 			contactController:   controller.NewContact(ctx),
+			templateController:  controller.NewTemplate(ctx),
 		}
 	})
 	keeperControllers.startControllers()
@@ -49,6 +51,7 @@ func (c *controllers) startControllers() {
 
 		clientGroup := apiGroup.Group("/client").Use(middleware.AuthMiddleware())
 		clientGroup.POST("", c.clientController.SaveClient)
+		clientGroup.GET("", c.clientController.GetClient)
 		clientGroup.GET("/phone-number-id", c.clientController.GetClientPhoneNumberId)
 	}
 	{
@@ -58,17 +61,23 @@ func (c *controllers) startControllers() {
 	{
 		campaignGroup := apiGroup.Group("/campaign").Use(middleware.AuthMiddleware())
 		campaignGroup.POST("/:campaignId/start", c.campaignController.StartCampaign)
+		campaignGroup.GET("/search", c.campaignController.SearchCampaigns)
 		campaignGroup.GET("", c.campaignController.GetCampaign)
 		campaignGroup.POST("", c.campaignController.SaveCampaign)
 	}
 	{
 		variablesGroup := apiGroup.Group("/variables").Use(middleware.AuthMiddleware())
-		variablesGroup.GET("", c.variablesController.GetVariables)
+		variablesGroup.GET("/search", c.variablesController.SearchVariables)
 		variablesGroup.POST("", c.variablesController.SaveManyVariable)
 	}
 	{
 		contactGroup := apiGroup.Group("/contact").Use(middleware.AuthMiddleware())
-		contactGroup.GET("", c.contactController.FindContacts)
+		contactGroup.GET("", c.contactController.SearchContacts)
 		contactGroup.POST("", c.contactController.SaveContact)
+	}
+	{
+		templateGroup := apiGroup.Group("/template").Use(middleware.AuthMiddleware())
+		templateGroup.POST("", c.templateController.Save)
+		templateGroup.GET("/search", c.templateController.SearchTemplates)
 	}
 }

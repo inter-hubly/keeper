@@ -15,6 +15,7 @@ type Campaign interface {
 	GetCampaign(c *gin.Context)
 	SaveCampaign(c *gin.Context)
 	StartCampaign(c *gin.Context)
+	SearchCampaigns(c *gin.Context)
 }
 
 type campaignController struct {
@@ -39,14 +40,14 @@ func NewCampaign(ctx context.Context) *campaignController {
 func (ctrl *campaignController) GetCampaign(c *gin.Context) {
 	ctx, loggedUser := middleware.GetLoggedUser(c)
 
-	saveCampaign, err := ctrl.campaignService.GetCampaign(ctx, loggedUser)
+	getCampaign, err := ctrl.campaignService.GetCampaign(ctx, loggedUser)
 
 	if err != nil {
 		httprest.Error(c, err.Error())
 		return
 	}
 
-	httprest.Created(c, saveCampaign)
+	httprest.Created(c, getCampaign)
 
 }
 
@@ -69,7 +70,7 @@ func (ctrl *campaignController) SaveCampaign(c *gin.Context) {
 	var campaignDto kdto.Campaign
 
 	if err := c.BindJSON(&campaignDto); err != nil {
-		httprest.Error(c, "Error when marshal login")
+		httprest.Error(c, "Error when marshal campaign")
 		return
 	}
 	saveCampaign, err := ctrl.campaignService.SaveCampaign(ctx, loggedUser, &campaignDto)
@@ -80,4 +81,15 @@ func (ctrl *campaignController) SaveCampaign(c *gin.Context) {
 	}
 
 	httprest.Created(c, saveCampaign)
+}
+
+func (ctrl *campaignController) SearchCampaigns(c *gin.Context) {
+	ctx, loggedUser := middleware.GetLoggedUser(c)
+
+	listCampaign, err := ctrl.campaignService.ListCampaign(ctx, loggedUser)
+	if err != nil {
+		httprest.Error(c, err.Error())
+		return
+	}
+	httprest.Ok(c, listCampaign)
 }

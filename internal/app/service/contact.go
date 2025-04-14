@@ -16,7 +16,7 @@ import (
 
 type Contact interface {
 	SaveContact(ctx context.Context, loggedUser *hctx.Logged, contactDto *kdto.Contact) (*domain.Contact, error)
-	FindContacts(ctx context.Context, loggedUser *hctx.Logged) ([]domain.Contact, error)
+	SearchContacts(ctx context.Context, loggedUser *hctx.Logged) ([]domain.Contact, error)
 }
 
 type contactService struct {
@@ -75,7 +75,7 @@ func (c *contactService) SaveContact(ctx context.Context, loggedUser *hctx.Logge
 	return domainContact, nil
 }
 
-func (c *contactService) FindContacts(ctx context.Context, loggedUser *hctx.Logged) ([]domain.Contact, error) {
+func (c *contactService) SearchContacts(ctx context.Context, loggedUser *hctx.Logged) ([]domain.Contact, error) {
 	hlog.Debug(ctx, "contactService.FindContacts", fmt.Sprintf("%+v", loggedUser))
 	contacts, err := c.contactRepository.FindContacts(ctx, loggedUser.Tenant)
 	if err != nil {

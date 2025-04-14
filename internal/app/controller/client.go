@@ -13,6 +13,7 @@ import (
 
 type Client interface {
 	GetClientPhoneNumberId(c *gin.Context)
+	GetClient(c *gin.Context)
 	SaveClient(c *gin.Context)
 }
 
@@ -62,4 +63,14 @@ func (ctrl *clientController) SaveClient(c *gin.Context) {
 		return
 	}
 	httprest.Created(c, nil)
+}
+
+func (ctrl *clientController) GetClient(c *gin.Context) {
+	ctx, loggedUser := middleware.GetLoggedUser(c)
+	getClient, err := ctrl.clientService.GetClientByPhoneNumberId(ctx, loggedUser.Tenant)
+	if err != nil {
+		httprest.Error(c, "client not found")
+		return
+	}
+	httprest.Ok(c, getClient)
 }

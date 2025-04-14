@@ -30,7 +30,7 @@ func NewUser(ctx context.Context) *userRepository {
 
 	userRepositoryOnce.Do(func() {
 		user = &userRepository{
-			connection: pgsql.GetConnection(),
+			connection: pgsql.GetConnection(ctx),
 		}
 	})
 	return user

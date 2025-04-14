@@ -9,7 +9,7 @@ type Conversations struct {
 type Message struct {
 	Status  []MessageStatus `json:"status,omitempty"`
 	Id      string          `json:"id"`
-	Text    string          `json:"text"`
+	Text    *string         `json:"text"`
 	IsOwner bool            `json:"isOwner"`
 }
 
