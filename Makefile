@@ -18,7 +18,9 @@ coverage: test
 	else \
 		echo "✅ Coverage is acceptable."; \
 	fi
-build:
+	
+build: coverage
+	@echo "🚀 Building Docker image..."
 	@SSH_KEY=$(shell cat $(SSH_KEY_PATH) | base64 -w 0) && \
 	docker build --build-arg SSH_KEY="$${SSH_KEY}" -t ghcr.io/inter-hubly/keeper:development . && \
 	docker push ghcr.io/inter-hubly/keeper:development
