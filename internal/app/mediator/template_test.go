@@ -68,17 +68,7 @@ func TestTemplateMediator(t *testing.T) {
 			hasError: true,
 			template: newDomainTemplate("Oi, {{testError}}! Tudo bem? 😊 Só passando para lembrar sobre o pagamento da aula de inglês"),
 			auxFunc: func(template *domain.Template) {
-				bodyText := "Oi, {{1}}! Tudo bem? 😊 Só passando para lembrar sobre o pagamento da aula de inglês"
-				allMocks.whatsAppGateway.EXPECT().CreateTemplate(gomock.Any(), gomock.Any()).
-					Do(func(_ context.Context, template *domain.Template) {
-						assert.Equal(t, template.Components[1].Text, &bodyText)
-					}).
-					Return(&kdto.WhatsAppTemplateResponse{
-						Id: "123456",
-					}, nil)
-
 				allMocks.variablesRepository.EXPECT().GetVariables(gomock.Any()).Return(variable.Variable, nil)
-				allMocks.templateRepository.EXPECT().SaveTemplate(gomock.Any(), gomock.Any(), gomock.Any()).Return(template, nil)
 			},
 		},
 	} {
