@@ -1,3 +1,5 @@
+//go:generate mockgen -source=variables.go -destination=mocks/variables_mock.go -package=mocks
+
 package repository
 
 import (
@@ -17,7 +19,7 @@ import (
 type Variable interface {
 	SaveVariable(ctx context.Context, variable *domain.Variables) (*domain.Variables, error)
 	SaveManyVariables(ctx context.Context, variable *domain.Variables) error
-	GetVariables(ctx context.Context) ([]domain.SingleVariable, error)
+	GetVariables(ctx context.Context) (map[string]domain.SingleVariable, error)
 }
 
 type variableRepository struct {
@@ -26,18 +28,18 @@ type variableRepository struct {
 }
 
 var (
-	variableRepositoryOnce sync.Once
-	variable               *variableRepository
+	_variableRepositoryOnce sync.Once
+	_variableRepository     *variableRepository
 )
 
 func NewVariables(ctx context.Context) *variableRepository {
-	variableRepositoryOnce.Do(func() {
-		variable = &variableRepository{
+	_variableRepositoryOnce.Do(func() {
+		_variableRepository = &variableRepository{
 			connection: hmongo.GetConnection(ctx),
 			collection: "variables",
 		}
 	})
-	return variable
+	return _variableRepository
 }
 
 func (r *variableRepository) SaveVariable(ctx context.Context, domainVariable *domain.Variables) (*domain.Variables, error) {
@@ -88,7 +90,7 @@ func (r *variableRepository) SaveManyVariables(ctx context.Context, variables *d
 	return nil
 }
 
-func (r *variableRepository) GetVariables(ctx context.Context) ([]domain.SingleVariable, error) {
+func (r *variableRepository) GetVariables(ctx context.Context) (map[string]domain.SingleVariable, error) {
 	hlog.Debug(ctx, "variableRepository.GetVariables", "getting variables for tenant")
 
 	var result domain.Variables
@@ -99,14 +101,14 @@ func (r *variableRepository) GetVariables(ctx context.Context) ([]domain.SingleV
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			// Caso o documento não seja encontrado, retornamos uma lista vazia, sem erro
-			return []domain.SingleVariable{}, nil
+			return map[string]domain.SingleVariable{}, nil
 		}
 		hlog.Error(ctx, "variableRepository.GetVariables", "error finding variables")
 		return nil, err
 	}
 
 	if len(result.Variable) == 0 {
-		return []domain.SingleVariable{}, nil
+		return map[string]domain.SingleVariable{}, nil
 	}
 
 	return result.Variable, nil

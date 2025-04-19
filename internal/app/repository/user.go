@@ -1,3 +1,5 @@
+//go:generate mockgen -source=user.go -destination=mocks/user_mock.go -package=mocks
+
 package repository
 
 import (
@@ -22,18 +24,18 @@ type userRepository struct {
 }
 
 var (
-	userRepositoryOnce sync.Once
-	user               *userRepository
+	_userRepositoryOnce sync.Once
+	_userRepository     *userRepository
 )
 
 func NewUser(ctx context.Context) *userRepository {
 
-	userRepositoryOnce.Do(func() {
-		user = &userRepository{
+	_userRepositoryOnce.Do(func() {
+		_userRepository = &userRepository{
 			connection: pgsql.GetConnection(ctx),
 		}
 	})
-	return user
+	return _userRepository
 }
 
 func (r *userRepository) GetUserByUsername(ctx context.Context, userEmail string) (*entity.User, error) {

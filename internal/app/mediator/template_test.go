@@ -2,92 +2,129 @@ package mediator
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/inter-hubly/keeper/internal/app/domain"
-	"github.com/inter-hubly/keeper/internal/app/gateway"
-	"github.com/inter-hubly/keeper/internal/app/repository"
-	"github.com/inter-hubly/pilot/database/hmongo"
+	"github.com/inter-hubly/keeper/internal/app/domain/kdto"
+	gatewayMock "github.com/inter-hubly/keeper/internal/app/gateway/mocks"
+	"github.com/inter-hubly/keeper/internal/app/repository/mocks"
 	"github.com/inter-hubly/pilot/hctx"
 	"github.com/inter-hubly/pilot/testutils"
 	"github.com/stretchr/testify/assert"
 )
 
-const containerEnvironments = false
-
-func TestTemplateMediator(t *testing.T) {
-	ctx := context.Background()
-
-	var host string
-	var close func(ctx context.Context) error
-	var err error
-
-	if containerEnvironments {
-		host, close, err = testutils.ElasticSearch(ctx)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if close != nil {
-			defer close(ctx)
-		}
-	} else {
-		host = "mongodb://localhost:27017"
-	}
-	hmongo.NewConnection(
-		ctx,
-		hmongo.WithDatabase("test"),
-		hmongo.WithUrl(host),
-	)
-	logged := hctx.Logged{
-		UserId: "userTest",
-		Tenant: "tenantTest",
-	}
-	ctx = hctx.LoggedUser.New(ctx, logged)
-
-	mediator := templateMediator{
-		templateRepository: repository.NewTemplate(ctx),
-		whatsAppGateway:    gateway.NewWhatsAppMock(),
-	}
-
-	t.Run("Need to save", func(t *testing.T) {
-		var myDto domain.Template
-
-		if err = json.Unmarshal([]byte(dataDto), &myDto); err != nil {
-			fmt.Println("Erro ao decodificar JSON:", err)
-			return
-		}
-
-		save, err := mediator.Save(ctx, &logged, &myDto)
-		assert.NotEmpty(t, save)
-		assert.Nil(t, err)
-	})
+type allMock struct {
+	templateRepository  *mocks.MockTemplate
+	variablesRepository *mocks.MockVariable
+	whatsAppGateway     *gatewayMock.MockWhatsApp
 }
 
-var dataDto = `{
-		"name": "cobranca_mensal_1",
-		"language": "pt_BR",
-		"category": "UTILITY",
-		"parameter_format": "POSITIONAL",
-		"components": [
-			{
-				"type": "HEADER",
-				"format": "TEXT",
-				"text": "Lembrete de Pagamento"
+func TestTemplateMediator(t *testing.T) {
+	ctx := testutils.SetLoggedUser(context.Background())
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	allMocks := allMock{
+		variablesRepository: mocks.NewMockVariable(ctrl),
+		templateRepository:  mocks.NewMockTemplate(ctrl),
+		whatsAppGateway:     gatewayMock.NewMockWhatsApp(ctrl),
+	}
+
+	mediator := templateMediator{
+		variablesRepository: allMocks.variablesRepository,
+		templateRepository:  allMocks.templateRepository,
+		whatsAppGateway:     allMocks.whatsAppGateway,
+	}
+
+	loggedUser := hctx.LoggedUser.Get(ctx)
+	variable := newVariables()
+
+	for _, v := range []struct {
+		testName string
+		hasError bool
+		template *domain.Template
+		auxFunc  func(template *domain.Template)
+	}{
+		{
+			testName: "Need to save new template",
+			template: newDomainTemplate("Oi, {{name}}! Tudo bem? 😊 Só passando para lembrar sobre o pagamento da aula de inglês"),
+			auxFunc: func(template *domain.Template) {
+				allMocks.whatsAppGateway.EXPECT().CreateTemplate(gomock.Any(), gomock.Any()).
+					Do(func(_ context.Context, template *domain.Template) {
+						bodyText := "Oi, {{1}}! Tudo bem? 😊 Só passando para lembrar sobre o pagamento da aula de inglês"
+						assert.Equal(t, template.Components[1].Text, &bodyText)
+					}).
+					Return(&kdto.WhatsAppTemplateResponse{
+						Id: "123456",
+					}, nil)
+
+				allMocks.variablesRepository.EXPECT().GetVariables(gomock.Any()).Return(variable.Variable, nil)
+				allMocks.templateRepository.EXPECT().SaveTemplate(gomock.Any(), gomock.Any(), gomock.Any()).Return(template, nil)
 			},
-			{
-				"type": "BODY",
-				"text": "Oi, {{1}}! Tudo bem? 😊 Só passando para lembrar sobre o pagamento da aula de inglês de R$ {{2}} 📝. Assim a gente mantém tudo certinho e posso continuar te ajudando a arrasar no inglês! 🚀 Qualquer dúvida, é só me chamar! 😄",
-				"example": {
-					"body_text": [
-						["Saimon", "20,20"]
-					]
-				}
+		},
+		{
+			testName: "Cant save new template because does not exist variable",
+			hasError: true,
+			template: newDomainTemplate("Oi, {{testError}}! Tudo bem? 😊 Só passando para lembrar sobre o pagamento da aula de inglês"),
+			auxFunc: func(template *domain.Template) {
+				bodyText := "Oi, {{1}}! Tudo bem? 😊 Só passando para lembrar sobre o pagamento da aula de inglês"
+				allMocks.whatsAppGateway.EXPECT().CreateTemplate(gomock.Any(), gomock.Any()).
+					Do(func(_ context.Context, template *domain.Template) {
+						assert.Equal(t, template.Components[1].Text, &bodyText)
+					}).
+					Return(&kdto.WhatsAppTemplateResponse{
+						Id: "123456",
+					}, nil)
+
+				allMocks.variablesRepository.EXPECT().GetVariables(gomock.Any()).Return(variable.Variable, nil)
+				allMocks.templateRepository.EXPECT().SaveTemplate(gomock.Any(), gomock.Any(), gomock.Any()).Return(template, nil)
 			},
-			{
-				"type": "FOOTER",
-				"text": "See ya!"
+		},
+	} {
+		t.Run(v.testName, func(t *testing.T) {
+			v.auxFunc(v.template)
+			save, err := mediator.Save(ctx, &loggedUser, v.template)
+			if v.hasError {
+				assert.Error(t, err)
+				return
 			}
-		]
-}`
+			assert.NotEmpty(t, save)
+			assert.Nil(t, err)
+		})
+	}
+}
+
+func newDomainTemplate(bodyText string) *domain.Template {
+	headerText := "Lembrete de Pagamento"
+	footerText := "See ya!"
+	components := []domain.Components{
+		{Type: "HEADER", Format: "TEXT", Text: &headerText},
+		{Type: "BODY", Format: "TEXT", Text: &bodyText, Example: map[string][][]string{
+			"body_text": {
+				{"Saimon"},
+			},
+		},
+		},
+		{Type: "FOOTER", Format: "TEXT", Text: &footerText},
+	}
+
+	return &domain.Template{
+		Name:            "test",
+		Language:        "pt_BR",
+		Category:        "UTILITY",
+		ParameterFormat: "POSITIONAL",
+		Components:      components,
+	}
+}
+
+func newVariables() *domain.Variables {
+	return &domain.Variables{
+		Variable: map[string]domain.SingleVariable{
+			"name": {
+				Slug:  "name",
+				Label: "name",
+			},
+		},
+	}
+}

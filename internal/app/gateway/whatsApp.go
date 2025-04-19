@@ -1,3 +1,5 @@
+//go:generate mockgen -source=whatsApp.go -destination=mocks/whatsApp_mock.go -package=mocks
+
 package gateway
 
 import (
@@ -61,7 +63,7 @@ func (w *whatsAppGateway) CreateTemplate(ctx context.Context, message *domain.Te
 	for _, component := range message.Components {
 		dto := componentDto{
 			Type: string(component.Type),
-			Text: component.Text,
+			Text: *component.Text,
 		}
 		if len(component.Example) > 0 {
 			dto.Example = component.Example

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -28,8 +29,9 @@ var (
 )
 
 type templateMediator struct {
-	templateRepository repository.Template
-	whatsAppGateway    gateway.WhatsApp
+	variablesRepository repository.Variable
+	templateRepository  repository.Template
+	whatsAppGateway     gateway.WhatsApp
 }
 
 func NewTemplate(ctx context.Context) *templateMediator {
@@ -42,8 +44,9 @@ func NewTemplate(ctx context.Context) *templateMediator {
 			gtw = gateway.NewWhatsApp(ctx)
 		}
 		_template = &templateMediator{
-			templateRepository: repository.NewTemplate(ctx),
-			whatsAppGateway:    gtw,
+			variablesRepository: repository.NewVariables(ctx),
+			templateRepository:  repository.NewTemplate(ctx),
+			whatsAppGateway:     gtw,
 		}
 	})
 	return _template
@@ -52,36 +55,54 @@ func NewTemplate(ctx context.Context) *templateMediator {
 func (t *templateMediator) Save(ctx context.Context, user *hctx.Logged, templateDomain *domain.Template) (*domain.Template, error) {
 	hlog.Debug(ctx, "templateMediator.Save", fmt.Sprint(templateDomain))
 
-	// for each component, header, body and footer
-	re := regexp.MustCompile(`\{\{([^}]+)\}\}`)
-	for _, v := range templateDomain.Components {
-		matches := re.FindAllStringSubmatch(v.Text, -1)
+	cloned := make([]domain.Components, len(templateDomain.Components))
+	copy(cloned, templateDomain.Components)
 
-		if matches != nil {
-			manyExamples := v.Example[strings.ToLower(fmt.Sprintf("%s_text", v.Type))]
-
-			// many examples
-			for _, eachExample := range manyExamples {
-				// need verify each example has the same value then match
-				if len(eachExample) != len(matches) {
-					return nil, errors.New("error when save template")
-				}
-			}
-		}
-
-	}
-
-	templateDomain.Slug = util.ToSlug(templateDomain.Name, true)
-	gatewayResponse, err := t.whatsAppGateway.CreateTemplate(ctx, templateDomain)
-
+	variables, err := t.variablesRepository.GetVariables(ctx)
 	if err != nil {
 		hlog.Error(ctx, "templateMediator.Save", err.Error())
 		return nil, err
 	}
+
+	var templateVariables []string
+	// for each component, header, body and footer
+	re := regexp.MustCompile(`\{\{([^}]+)\}\}`)
+	for i := range templateDomain.Components {
+		v := templateDomain.Components[i]
+		matches := re.FindAllStringSubmatch(*v.Text, -1)
+
+		if matches != nil {
+			frontVariable := matches[0][1]
+
+			if _, ok := variables[frontVariable]; !ok {
+				hlog.Error(ctx, "templateMediator.Save", "variable not found")
+				return nil, fmt.Errorf("variable %s not found", frontVariable)
+			}
+			templateVariables = append(templateVariables, frontVariable)
+			manyExamples := v.Example[strings.ToLower(fmt.Sprintf("%s_text", v.Type))]
+
+			for j, eachExample := range manyExamples {
+				if len(eachExample) != len(matches) {
+					return nil, errors.New("error when save template")
+				}
+				replacedString := strings.Replace(*v.Text, frontVariable, strconv.Itoa(j+1), -1)
+				templateDomain.Components[i].Text = &replacedString
+			}
+		}
+	}
+
+	templateDomain.Slug = util.ToSlug(templateDomain.Name, true)
+	gatewayResponse, err := t.whatsAppGateway.CreateTemplate(ctx, templateDomain)
+	if err != nil {
+		hlog.Error(ctx, "templateMediator.Save", err.Error())
+		return nil, err
+	}
+
 	templateDomain.Entity = base.NewBaseEntity(ctx, user)
 	templateDomain.ResponseId = gatewayResponse.Id
 	templateDomain.Status = domain.TemplateStatus(gatewayResponse.Status)
-
+	templateDomain.Components = cloned
+	templateDomain.Variables = templateVariables
 	saveTemplate, err := t.templateRepository.SaveTemplate(ctx, user, templateDomain)
 	if err != nil {
 		hlog.Error(ctx, "templateMediator.Save", fmt.Sprintf("%s", err))

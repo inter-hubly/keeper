@@ -3,8 +3,8 @@ package domain
 import "github.com/inter-hubly/pilot/domain/base"
 
 type Variables struct {
-	Id          string           `bson:"_id,omitempty"`
-	Variable    []SingleVariable `bson:"variable"`
+	Id          string                    `bson:"_id,omitempty"`
+	Variable    map[string]SingleVariable `bson:"variable"`
 	base.Entity `bson:",inline"`
 }
 

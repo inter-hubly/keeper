@@ -39,16 +39,18 @@ func NewVariables(ctx context.Context) *variablesService {
 
 func (v *variablesService) SaveVariables(ctx context.Context, logged *hctx.Logged, variableDto *kdto.Variable) error {
 	slug := valueobject.NewSlug(variableDto.Label)
-	newVariable := domain.Variables{
-		Variable: []domain.SingleVariable{
-			{
-				Slug:  slug.Value(),
-				Label: variableDto.Label,
-				Type:  variableDto.Type,
-			},
-		},
-		Entity: base.NewBaseEntity(ctx, logged),
+	variableMap := make(map[string]domain.SingleVariable)
+	variableMap[slug.Value()] = domain.SingleVariable{
+		Slug:  slug.Value(),
+		Label: variableDto.Label,
+		Type:  variableDto.Type,
 	}
+
+	newVariable := domain.Variables{
+		Variable: variableMap,
+		Entity:   base.NewBaseEntity(ctx, logged),
+	}
+
 	if _, err := v.variableRepository.SaveVariable(ctx, &newVariable); err != nil {
 		return err
 	}
@@ -57,15 +59,16 @@ func (v *variablesService) SaveVariables(ctx context.Context, logged *hctx.Logge
 
 func (v *variablesService) SaveManyVariables(ctx context.Context, logged *hctx.Logged, variableDto []kdto.Variable) error {
 	hlog.Debug(ctx, "variablesService.SaveManyVariables", "saving many variables")
-	manyVariables := make([]domain.SingleVariable, 0, len(variableDto))
+	manyVariables := map[string]domain.SingleVariable{}
 	for _, vdto := range variableDto {
 		slug := valueobject.NewSlug(vdto.Label)
+
 		newVariable := domain.SingleVariable{
 			Slug:  slug.Value(),
 			Label: vdto.Label,
 			Type:  vdto.Type,
 		}
-		manyVariables = append(manyVariables, newVariable)
+		manyVariables[slug.Value()] = newVariable
 	}
 	variablesDb := domain.Variables{
 		Variable: manyVariables,

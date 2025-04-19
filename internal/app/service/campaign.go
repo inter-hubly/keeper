@@ -141,7 +141,7 @@ func (c *campaignService) containsAll(list1 []domain.Contact, list2 []string) bo
 	return true
 }
 
-func (c *campaignService) containsAllVariables(list1 []domain.SingleVariable, list2 []valueobject.Pair[string, string]) bool {
+func (c *campaignService) containsAllVariables(list1 map[string]domain.SingleVariable, list2 []valueobject.Pair[string, string]) bool {
 	elements := make(map[string]bool)
 
 	for _, item := range list2 {

@@ -20,6 +20,7 @@ type Template struct {
 	Status          TemplateStatus `json:"status" bson:"status"`
 	ResponseId      string         `json:"responseId" bson:"response_id"`
 	Components      []Components   `json:"components" bson:"components"`
+	Variables       []string       `json:"variables" bson:"variables"`
 	base.Entity     `json:"-,inline" bson:"-,inline"`
 }
 
@@ -33,14 +34,14 @@ const (
 type Components struct {
 	Type    TemplateType          `json:"type" bson:"type"`
 	Format  string                `json:"format" bson:"format"`
-	Text    string                `json:"text" bson:"text"`
+	Text    *string               `json:"text" bson:"text"`
 	Example map[string][][]string `json:"example,omitempty" bson:"example,omitempty"`
 }
 
 func (t *Template) GetComponentMessages() string {
 	var resp string
 	for i := range t.Components {
-		resp += t.Components[i].Text + " "
+		resp += *t.Components[i].Text + " "
 	}
 	return resp
 }

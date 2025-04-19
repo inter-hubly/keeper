@@ -1,3 +1,5 @@
+//go:generate mockgen -source=campaign.go -destination=mocks/campaign_mock.go -package=mocks
+
 package repository
 
 import (
@@ -28,18 +30,18 @@ type campaignRepository struct {
 }
 
 var (
-	onceCampaign       sync.Once
-	repositoryCampaign *campaignRepository
+	_campaignRepositoryOnce sync.Once
+	_campaignRepository     *campaignRepository
 )
 
 func NewCampaign(ctx context.Context) *campaignRepository {
-	onceCampaign.Do(func() {
-		repositoryCampaign = &campaignRepository{
+	_campaignRepositoryOnce.Do(func() {
+		_campaignRepository = &campaignRepository{
 			connection: hmongo.GetConnection(ctx),
 			collection: "campaign",
 		}
 	})
-	return repositoryCampaign
+	return _campaignRepository
 }
 
 func (c *campaignRepository) GetCampaignById(ctx context.Context, campaignId string) (*entity.Campaign, error) {

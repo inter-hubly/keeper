@@ -1,8 +1,9 @@
+//go:generate mockgen -source=client.go -destination=mocks/client_mock.go -package=mocks
+
 package repository
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -22,17 +23,17 @@ type clientRepository struct {
 }
 
 var (
-	clientRepositoryOnce sync.Once
-	client               *clientRepository
+	_clientRepositoryOnce sync.Once
+	_clientRepository     *clientRepository
 )
 
 func NewClient(ctx context.Context) *clientRepository {
-	clientRepositoryOnce.Do(func() {
-		client = &clientRepository{
+	_clientRepositoryOnce.Do(func() {
+		_clientRepository = &clientRepository{
 			connection: pgsql.GetConnection(ctx),
 		}
 	})
-	return client
+	return _clientRepository
 }
 
 func (c *clientRepository) GetClientByPhoneNumberId(ctx context.Context, clientId string) (*entity.Client, error) {
@@ -58,9 +59,6 @@ func (c *clientRepository) GetClientByPhoneNumberId(ctx context.Context, clientI
 	); err != nil {
 		hlog.Error(ctx, "clientRepository.GetClientById", fmt.Sprintf("error scan clientId %s : %s", clientId, err))
 		return nil, err
-	}
-	if client == nil {
-		return nil, errors.New("client is nil")
 	}
 	return &clientDb, nil
 }

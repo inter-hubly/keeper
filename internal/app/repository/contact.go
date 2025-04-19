@@ -1,3 +1,5 @@
+//go:generate mockgen -source=contact.go -destination=mocks/contact_mock.go -package=mocks
+
 package repository
 
 import (
@@ -22,18 +24,18 @@ type contactRepository struct {
 }
 
 var (
-	contactRepositoryOnce sync.Once
-	contact               *contactRepository
+	_contactRepositoryOnce sync.Once
+	_contactRepository     *contactRepository
 )
 
 func NewContact(ctx context.Context) *contactRepository {
-	contactRepositoryOnce.Do(func() {
-		contact = &contactRepository{
+	_contactRepositoryOnce.Do(func() {
+		_contactRepository = &contactRepository{
 			connection: hmongo.GetConnection(ctx),
 			collection: "contact",
 		}
 	})
-	return contact
+	return _contactRepository
 }
 
 func (r *contactRepository) SaveContact(ctx context.Context, contact *domain.Contact) (string, error) {
