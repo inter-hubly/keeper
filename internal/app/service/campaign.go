@@ -34,13 +34,13 @@ type campaignService struct {
 }
 
 var (
-	onceCampaign    sync.Once
-	serviceCampaign *campaignService
+	_campaignServiceOnce sync.Once
+	_campaignService     *campaignService
 )
 
 func NewCampaign(ctx context.Context) *campaignService {
-	onceCampaign.Do(func() {
-		serviceCampaign = &campaignService{
+	_campaignServiceOnce.Do(func() {
+		_campaignService = &campaignService{
 			campaignRepository: repository.NewCampaign(ctx),
 			contactRepository:  repository.NewContact(ctx),
 			variableRepository: repository.NewVariables(ctx),
@@ -48,7 +48,7 @@ func NewCampaign(ctx context.Context) *campaignService {
 			broker:             broker.GetConnection(),
 		}
 	})
-	return serviceCampaign
+	return _campaignService
 }
 
 func (c *campaignService) StartCampaign(ctx context.Context, user *hctx.Logged, campaignId string) error {
@@ -112,6 +112,7 @@ func (c *campaignService) SaveCampaign(ctx context.Context, loggedUser *hctx.Log
 			Message:  templateEntity.GetComponentMessages(),
 		},
 		ContactsId: campaignDto.ContactsID,
+		IaContext:  campaignDto.IaContext,
 		Variables:  campaignDto.Variables,
 		Entity:     base.NewBaseEntity(ctx, loggedUser),
 		Flows:      campaignDto.Flows,

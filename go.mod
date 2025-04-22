@@ -3,11 +3,12 @@ module github.com/inter-hubly/keeper
 go 1.23.1
 
 //replace github.com/inter-hubly/pilot => /Users/saimonribeirosilva/Hubly/pilot // Mac
-//replace github.com/inter-hubly/pilot => /home/saimon/Documents/Hubly/pilot //Linux
+replace github.com/inter-hubly/pilot => /home/saimon/Documents/Hubly/pilot //Linux
 
 require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/golang-jwt/jwt/v4 v4.5.1
+	github.com/golang/mock v1.6.0
 	github.com/inter-hubly/pilot v0.1.4
 	github.com/stretchr/testify v1.9.0
 	go.mongodb.org/mongo-driver v1.17.2
@@ -47,7 +48,6 @@ require (
 	github.com/go-playground/validator/v10 v10.20.0 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang/mock v1.6.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/uuid v1.6.0 // indirect

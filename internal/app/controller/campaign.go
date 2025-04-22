@@ -23,18 +23,17 @@ type campaignController struct {
 }
 
 var (
-	campaignOnce sync.Once
-	campaign     *campaignController
+	_campaignControllerOnce sync.Once
+	_campaignController     *campaignController
 )
 
 func NewCampaign(ctx context.Context) *campaignController {
-
-	campaignOnce.Do(func() {
-		campaign = &campaignController{
+	_campaignControllerOnce.Do(func() {
+		_campaignController = &campaignController{
 			campaignService: service.NewCampaign(ctx),
 		}
 	})
-	return campaign
+	return _campaignController
 }
 
 func (ctrl *campaignController) GetCampaign(c *gin.Context) {
@@ -48,7 +47,6 @@ func (ctrl *campaignController) GetCampaign(c *gin.Context) {
 	}
 
 	httprest.Created(c, getCampaign)
-
 }
 
 func (ctrl *campaignController) StartCampaign(c *gin.Context) {
@@ -61,7 +59,6 @@ func (ctrl *campaignController) StartCampaign(c *gin.Context) {
 	}
 
 	httprest.Ok(c, nil)
-
 }
 
 func (ctrl *campaignController) SaveCampaign(c *gin.Context) {
