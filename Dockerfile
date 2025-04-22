@@ -49,5 +49,5 @@ ARG ENVIRONMENT
 LABEL maintainer="keeper"
 WORKDIR /app
 COPY --from=builder /app/keeper /app
-COPY --from=builder /app/init.sql /app
+#COPY --from=builder /app/init.sql /app
 ENTRYPOINT ./keeper
