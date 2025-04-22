@@ -3,13 +3,13 @@ module github.com/inter-hubly/keeper
 go 1.23.1
 
 //replace github.com/inter-hubly/pilot => /Users/saimonribeirosilva/Hubly/pilot // Mac
-replace github.com/inter-hubly/pilot => /home/saimon/Documents/Hubly/pilot //Linux
+//replace github.com/inter-hubly/pilot => /home/saimon/Documents/Hubly/pilot //Linux
 
 require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/golang-jwt/jwt/v4 v4.5.1
 	github.com/golang/mock v1.6.0
-	github.com/inter-hubly/pilot v0.1.4
+	github.com/inter-hubly/pilot v0.1.5
 	github.com/stretchr/testify v1.9.0
 	go.mongodb.org/mongo-driver v1.17.2
 	golang.org/x/crypto v0.26.0
