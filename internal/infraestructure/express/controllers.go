@@ -79,5 +79,6 @@ func (c *controllers) startControllers() {
 		templateGroup := apiGroup.Group("/template").Use(middleware.AuthMiddleware())
 		templateGroup.POST("", c.templateController.Save)
 		templateGroup.GET("/search", c.templateController.SearchTemplates)
+		templateGroup.POST("/sincronize", c.templateController.SincronizeWhatsAppTemplate)
 	}
 }

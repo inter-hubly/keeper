@@ -6,6 +6,7 @@ import (
 
 	"github.com/inter-hubly/keeper/internal/app/domain"
 	"github.com/inter-hubly/keeper/internal/app/service"
+	"github.com/inter-hubly/pilot/hlog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/inter-hubly/keeper/internal/app/mediator"
@@ -16,6 +17,7 @@ import (
 type Templates interface {
 	Save(c *gin.Context)
 	SearchTemplates(c *gin.Context)
+	SincronizeWhatsAppTemplate(c *gin.Context)
 }
 
 var (
@@ -39,6 +41,7 @@ func NewTemplate(ctx context.Context) *templateController {
 }
 
 func (t *templateController) Save(c *gin.Context) {
+	hlog.Debug(c, "templateController.Save", "Save Template")
 	var templateDto domain.Template
 	ctx, loggedUser := middleware.GetLoggedUser(c)
 	if err := c.BindJSON(&templateDto); err != nil {
@@ -58,6 +61,8 @@ func (t *templateController) Save(c *gin.Context) {
 }
 
 func (t *templateController) SearchTemplates(c *gin.Context) {
+	hlog.Debug(c, "templateController.SearchTemplates", "SearchTemplates Template")
+
 	ctx, loggedUser := middleware.GetLoggedUser(c)
 	all, err := t.templateService.SearchTemplates(ctx, loggedUser)
 	if err != nil {
@@ -65,4 +70,15 @@ func (t *templateController) SearchTemplates(c *gin.Context) {
 		return
 	}
 	httprest.Ok(c, all)
+}
+
+func (t *templateController) SincronizeWhatsAppTemplate(c *gin.Context) {
+	hlog.Debug(c, "templateController.SincronizeWhatsAppTemplate", "Sincronize Template")
+
+	ctx, loggedUser := middleware.GetLoggedUser(c)
+	if err := t.templateService.SincronizeWhatsAppTemplate(ctx, loggedUser); err != nil {
+		httprest.Error(c, "Error when sincronize template")
+		return
+	}
+	httprest.Created(c, nil)
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/inter-hubly/pilot/hlog"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Template interface {
@@ -19,6 +20,7 @@ type Template interface {
 	SearchTemplates(ctx context.Context, logged *hctx.Logged) ([]domain.Template, error)
 	GetTemplateByIds(ctx context.Context, ids []string) ([]domain.Template, error)
 	GetTemplateById(ctx context.Context, id string) (*domain.Template, error)
+	SaveManyTemplate(ctx context.Context, save []domain.Template) error
 }
 
 var (
@@ -129,4 +131,40 @@ func (t *templateRepository) GetTemplateById(ctx context.Context, id string) (*d
 		hlog.Error(ctx, "templateRepository.GetTemplateById", "error find template")
 	}
 	return &template, nil
+}
+
+func (t *templateRepository) SaveManyTemplate(ctx context.Context, save []domain.Template) error {
+	hlog.Debug(ctx, "templateRepository.SaveManyTemplate", "saving all Templates")
+	tenantId := hctx.Tenant.Get(ctx)
+
+	var operations []mongo.WriteModel
+
+	docs := make([]interface{}, len(save))
+	for i := range save {
+		filter := bson.M{
+			"slug":     save[i].Slug,
+			"tenantId": tenantId,
+		}
+
+		save[i].TenantId = tenantId
+		docs[i] = save[i]
+
+		update := bson.M{
+			"$set": save[i],
+		}
+		model := mongo.NewUpdateOneModel().
+			SetFilter(filter).
+			SetUpdate(update).
+			SetUpsert(true)
+		operations = append(operations, model)
+	}
+	if len(operations) == 0 {
+		return nil
+	}
+	_, err := t.connection.GetCollection(ctx, t.collection).BulkWrite(ctx, operations)
+	if err != nil {
+		hlog.Error(ctx, "templateRepository.SaveManyTemplate", err.Error())
+		return err
+	}
+	return nil
 }

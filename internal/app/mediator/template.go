@@ -55,7 +55,7 @@ func NewTemplate(ctx context.Context) *templateMediator {
 func (t *templateMediator) Save(ctx context.Context, user *hctx.Logged, templateDomain *domain.Template) (*domain.Template, error) {
 	hlog.Debug(ctx, "templateMediator.Save", fmt.Sprint(templateDomain))
 
-	cloned := make([]domain.Components, len(templateDomain.Components))
+	cloned := make([]domain.Component, len(templateDomain.Components))
 	copy(cloned, templateDomain.Components)
 
 	variables, err := t.variablesRepository.GetVariables(ctx)

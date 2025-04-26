@@ -12,6 +12,10 @@ import (
 type WhatsAppMock struct {
 }
 
+func (w *WhatsAppMock) FindAllTemplate(ctx context.Context) ([]kdto.WhatsAppMessageTemplateResponse, error) {
+	return nil, nil
+}
+
 func NewWhatsAppMock() *WhatsAppMock {
 	return &WhatsAppMock{}
 }

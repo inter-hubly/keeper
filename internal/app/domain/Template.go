@@ -19,8 +19,8 @@ type Template struct {
 	Language        string         `json:"language" bson:"language"`
 	Status          TemplateStatus `json:"status" bson:"status"`
 	ResponseId      string         `json:"responseId" bson:"response_id"`
-	Components      []Components   `json:"components" bson:"components"`
-	Variables       []string       `json:"variables" bson:"variables"`
+	Components      []Component    `json:"components" bson:"components"`
+	Variables       []string       `json:"variables,omitempty" bson:"variables,omitempty"`
 	base.Entity     `json:"-,inline" bson:"-,inline"`
 }
 
@@ -31,7 +31,7 @@ const (
 	Rejected TemplateStatus = "REJECTED"
 )
 
-type Components struct {
+type Component struct {
 	Type    TemplateType          `json:"type" bson:"type"`
 	Format  string                `json:"format" bson:"format"`
 	Text    *string               `json:"text" bson:"text"`

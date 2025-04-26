@@ -90,7 +90,7 @@ func TestTemplateMediator(t *testing.T) {
 func newDomainTemplate(bodyText string) *domain.Template {
 	headerText := "Lembrete de Pagamento"
 	footerText := "See ya!"
-	components := []domain.Components{
+	components := []domain.Component{
 		{Type: "HEADER", Format: "TEXT", Text: &headerText},
 		{Type: "BODY", Format: "TEXT", Text: &bodyText, Example: map[string][][]string{
 			"body_text": {

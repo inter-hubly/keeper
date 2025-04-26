@@ -18,6 +18,7 @@ import (
 
 type WhatsApp interface {
 	CreateTemplate(ctx context.Context, message *domain.Template) (*kdto.WhatsAppTemplateResponse, error)
+	FindAllTemplate(ctx context.Context) ([]kdto.WhatsAppMessageTemplateResponse, error)
 }
 
 type whatsAppGateway struct {
@@ -45,6 +46,7 @@ func (w *whatsAppGateway) CreateTemplate(ctx context.Context, message *domain.Te
 	client, err := w.clientRepository.GetClientByPhoneNumberId(ctx, tenantId)
 	if err != nil {
 		hlog.Error(ctx, "whatsAppGateway.CreateTemplate", err.Error())
+		return nil, err
 	}
 
 	messageDto := struct {
@@ -90,6 +92,36 @@ func (w *whatsAppGateway) CreateTemplate(ctx context.Context, message *domain.Te
 		return nil, err
 	}
 	return &whatsResp, nil
+}
+
+func (w *whatsAppGateway) FindAllTemplate(ctx context.Context) ([]kdto.WhatsAppMessageTemplateResponse, error) {
+	hlog.Debug(ctx, "whatsAppGateway.FindAllTemplate", "Find all template")
+
+	tenantId := hctx.Tenant.Get(ctx)
+	client, err := w.clientRepository.GetClientByPhoneNumberId(ctx, tenantId)
+	if err != nil {
+		hlog.Error(ctx, "whatsAppGateway.CreateTemplate", err.Error())
+		return nil, err
+	}
+
+	request := hrest.NewRequest(fmt.Sprintf("%s/%s/message_templates", w.url, client.BusinessId),
+		hrest.WithHeader([]hrest.Pair[string, string]{
+			{"Content-Type", "application/json"},
+			{"Authorization", "Bearer " + client.AccessToken},
+		}))
+
+	if err = request.CreateRequest(ctx, http.MethodGet); err != nil {
+		hlog.Error(ctx, "whatsAppGateway.CreateTemplate", err.Error())
+		return nil, err
+	}
+	var whatsResp struct {
+		Data []kdto.WhatsAppMessageTemplateResponse `json:"data"`
+	}
+	if err = request.GetBody(ctx, &whatsResp); err != nil {
+		hlog.Error(ctx, "whatsAppGateway.CreateTemplate", err.Error())
+		return nil, err
+	}
+	return whatsResp.Data, nil
 }
 
 type componentDto struct {
