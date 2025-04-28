@@ -24,17 +24,17 @@ type variablesService struct {
 }
 
 var (
-	variablesServiceOnce sync.Once
-	variables            *variablesService
+	_variablesServiceOnce sync.Once
+	_variablesService     *variablesService
 )
 
 func NewVariables(ctx context.Context) *variablesService {
-	variablesServiceOnce.Do(func() {
-		variables = &variablesService{
+	_variablesServiceOnce.Do(func() {
+		_variablesService = &variablesService{
 			variableRepository: repository.NewVariables(ctx),
 		}
 	})
-	return variables
+	return _variablesService
 }
 
 func (v *variablesService) SaveVariables(ctx context.Context, logged *hctx.Logged, variableDto *kdto.Variable) error {

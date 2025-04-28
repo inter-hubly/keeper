@@ -80,5 +80,7 @@ func (c *controllers) startControllers() {
 		templateGroup.POST("", c.templateController.Save)
 		templateGroup.GET("/search", c.templateController.SearchTemplates)
 		templateGroup.POST("/sincronize", c.templateController.SincronizeWhatsAppTemplate)
+		templateGroup.POST("/:templateId/variables", c.templateController.SaveVariables)
+		templateGroup.GET("/:templateId/variables/count", c.templateController.CountVariables)
 	}
 }

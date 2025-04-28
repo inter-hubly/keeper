@@ -1,8 +1,11 @@
+//go:generate mockgen -source=template.go -destination=mocks/template_mock.go -package=mocks
+
 package service
 
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 	"sync"
 
@@ -18,6 +21,8 @@ import (
 type Template interface {
 	SearchTemplates(ctx context.Context, user *hctx.Logged) ([]domain.Template, error)
 	SincronizeWhatsAppTemplate(ctx context.Context, user *hctx.Logged) error
+	SaveVariable(ctx context.Context, variables []kdto.Variable, templateId string) error
+	CountVariables(ctx context.Context, templateId string) (int, error)
 }
 
 var (
@@ -27,6 +32,7 @@ var (
 
 type templateService struct {
 	templateRepository repository.Template
+	variableRepository repository.Variable
 	whatsAppGateway    gateway.WhatsApp
 }
 
@@ -34,6 +40,7 @@ func NewTemplate(ctx context.Context) *templateService {
 	_templateServiceOnce.Do(func() {
 		_templateService = &templateService{
 			templateRepository: repository.NewTemplate(ctx),
+			variableRepository: repository.NewVariables(ctx),
 			whatsAppGateway:    gateway.NewWhatsApp(ctx),
 		}
 	})
@@ -108,7 +115,52 @@ func normalizeComponent(components []kdto.ComponentDto) []domain.Component {
 	return result
 }
 
+func (s *templateService) SaveVariable(ctx context.Context, variables []kdto.Variable, templateId string) error {
+	hlog.Debug(ctx, "templateService.SaveVariable", fmt.Sprintf("templateId: %s", templateId))
+	template, err := s.templateRepository.GetTemplateById(ctx, templateId)
+	if err != nil {
+		hlog.Error(ctx, "templateService.SaveVariable", err.Error())
+		return err
+	}
+
+	if err = s.variableRepository.VerifyUserVariables(ctx, variables); err != nil {
+		hlog.Error(ctx, "templateService.SaveVariable", err.Error())
+		return err
+	}
+	variablesString := make([]string, 0, len(variables))
+	for i := range variables {
+		variablesString = append(variablesString, variables[i].Slug)
+	}
+	template.Variables = variablesString
+
+	if _, err = s.templateRepository.SaveTemplate(ctx, template); err != nil {
+		hlog.Error(ctx, "templateService.SaveVariable", err.Error())
+		return err
+	}
+	return nil
+}
+
 func (s *templateService) SearchTemplates(ctx context.Context, user *hctx.Logged) ([]domain.Template, error) {
 	hlog.Debug(ctx, "templateService.FindAll", fmt.Sprintf("Find All Templates %s", user.UserId))
 	return s.templateRepository.SearchTemplates(ctx, user)
+}
+
+func (s *templateService) CountVariables(ctx context.Context, templateId string) (int, error) {
+	hlog.Debug(ctx, "templateService.CountVariables", fmt.Sprintf("templateId: %s", templateId))
+	template, err := s.templateRepository.GetTemplateById(ctx, templateId)
+	if err != nil {
+		hlog.Error(ctx, "templateService.CountVariables", err.Error())
+		return 0, err
+	}
+	re := regexp.MustCompile(`\{\{([^}]+)\}\}`)
+	components := template.Components
+	count := 0
+
+	for i := range components {
+		matches := re.FindAllStringSubmatch(*components[i].Text, -1)
+		if matches != nil {
+			count += len(matches)
+		}
+	}
+	return count, nil
 }

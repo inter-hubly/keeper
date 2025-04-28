@@ -78,7 +78,7 @@ func (c *campaignService) GetCampaign(ctx context.Context, user *hctx.Logged) (*
 }
 
 func (c *campaignService) SaveCampaign(ctx context.Context, loggedUser *hctx.Logged, campaignDto *kdto.Campaign) (*entity.Campaign, error) {
-	hlog.Debug(ctx, "campaignService.SaveCampaign", fmt.Sprintf("%s saving campaign with dto %s", loggedUser.Username, campaignDto))
+	hlog.Debug(ctx, "campaignService.SaveCampaign", fmt.Sprintf("%s saving campaign with dto %s", loggedUser.Username, campaignDto.Name))
 	contacts, err := c.contactRepository.FindContacts(ctx, loggedUser.Tenant)
 	if err != nil {
 		hlog.Error(ctx, "campaignService.SaveCampaign", fmt.Sprintf("Contact Repository Error: %v", err))

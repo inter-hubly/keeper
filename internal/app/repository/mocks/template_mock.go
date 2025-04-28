@@ -66,19 +66,33 @@ func (mr *MockTemplateMockRecorder) GetTemplateByIds(ctx, ids interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTemplateByIds", reflect.TypeOf((*MockTemplate)(nil).GetTemplateByIds), ctx, ids)
 }
 
-// SaveTemplate mocks base method.
-func (m *MockTemplate) SaveTemplate(ctx context.Context, user *hctx.Logged, dto *domain.Template) (*domain.Template, error) {
+// SaveManyTemplate mocks base method.
+func (m *MockTemplate) SaveManyTemplate(ctx context.Context, save []domain.Template) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SaveTemplate", ctx, user, dto)
+	ret := m.ctrl.Call(m, "SaveManyTemplate", ctx, save)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveManyTemplate indicates an expected call of SaveManyTemplate.
+func (mr *MockTemplateMockRecorder) SaveManyTemplate(ctx, save interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveManyTemplate", reflect.TypeOf((*MockTemplate)(nil).SaveManyTemplate), ctx, save)
+}
+
+// SaveTemplate mocks base method.
+func (m *MockTemplate) SaveTemplate(ctx context.Context, dto *domain.Template) (*domain.Template, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SaveTemplate", ctx, dto)
 	ret0, _ := ret[0].(*domain.Template)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SaveTemplate indicates an expected call of SaveTemplate.
-func (mr *MockTemplateMockRecorder) SaveTemplate(ctx, user, dto interface{}) *gomock.Call {
+func (mr *MockTemplateMockRecorder) SaveTemplate(ctx, dto interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveTemplate", reflect.TypeOf((*MockTemplate)(nil).SaveTemplate), ctx, user, dto)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveTemplate", reflect.TypeOf((*MockTemplate)(nil).SaveTemplate), ctx, dto)
 }
 
 // SearchTemplates mocks base method.

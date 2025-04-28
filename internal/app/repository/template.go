@@ -13,10 +13,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Template interface {
-	SaveTemplate(ctx context.Context, user *hctx.Logged, dto *domain.Template) (*domain.Template, error)
+	SaveTemplate(ctx context.Context, dto *domain.Template) (*domain.Template, error)
 	SearchTemplates(ctx context.Context, logged *hctx.Logged) ([]domain.Template, error)
 	GetTemplateByIds(ctx context.Context, ids []string) ([]domain.Template, error)
 	GetTemplateById(ctx context.Context, id string) (*domain.Template, error)
@@ -43,14 +44,35 @@ func NewTemplate(ctx context.Context) *templateRepository {
 	return _template
 }
 
-func (t *templateRepository) SaveTemplate(ctx context.Context, user *hctx.Logged, domainTemplate *domain.Template) (*domain.Template, error) {
+func (t *templateRepository) SaveTemplate(ctx context.Context, domainTemplate *domain.Template) (*domain.Template, error) {
 	hlog.Debug(ctx, "templateRepository.SaveTemplate", "saving one Template")
-	insertId, err := t.connection.GetCollection(ctx, t.collection).InsertOne(ctx, domainTemplate)
+
+	primitiveObjectId, err := primitive.ObjectIDFromHex(domainTemplate.Id)
 	if err != nil {
 		return nil, err
 	}
-	id := insertId.InsertedID
-	domainTemplate.Id = id.(primitive.ObjectID).Hex()
+
+	filter := bson.M{
+		"tenantId": domainTemplate.TenantId,
+		"_id":      primitiveObjectId,
+	}
+
+	// preciso retirar o _id
+	domainTemplate.Id = ""
+	update := bson.M{
+		"$set": domainTemplate,
+	}
+
+	opts := options.Update().SetUpsert(true)
+
+	result, err := t.connection.GetCollection(ctx, t.collection).UpdateOne(ctx, filter, update, opts)
+	if err != nil {
+		return nil, err
+	}
+	if result.UpsertedID != nil {
+		domainTemplate.Id = result.UpsertedID.(primitive.ObjectID).Hex()
+	}
+
 	return domainTemplate, nil
 }
 

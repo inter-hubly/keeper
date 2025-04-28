@@ -18,8 +18,8 @@ type Variables interface {
 }
 
 var (
-	variableControllerOnce sync.Once
-	variables              *variableController
+	_variableControllerOnce sync.Once
+	_variableController     *variableController
 )
 
 type variableController struct {
@@ -27,13 +27,12 @@ type variableController struct {
 }
 
 func NewVariable(ctx context.Context) *variableController {
-
-	variableControllerOnce.Do(func() {
-		variables = &variableController{
+	_variableControllerOnce.Do(func() {
+		_variableController = &variableController{
 			variablesService: service.NewVariables(ctx),
 		}
 	})
-	return variables
+	return _variableController
 }
 
 func (v *variableController) SaveVariable(c *gin.Context) {

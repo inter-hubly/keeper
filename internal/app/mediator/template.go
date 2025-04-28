@@ -103,7 +103,7 @@ func (t *templateMediator) Save(ctx context.Context, user *hctx.Logged, template
 	templateDomain.Status = domain.TemplateStatus(gatewayResponse.Status)
 	templateDomain.Components = cloned
 	templateDomain.Variables = templateVariables
-	saveTemplate, err := t.templateRepository.SaveTemplate(ctx, user, templateDomain)
+	saveTemplate, err := t.templateRepository.SaveTemplate(ctx, templateDomain)
 	if err != nil {
 		hlog.Error(ctx, "templateMediator.Save", fmt.Sprintf("%s", err))
 		return nil, err

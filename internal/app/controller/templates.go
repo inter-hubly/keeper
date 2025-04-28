@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/inter-hubly/keeper/internal/app/domain"
+	"github.com/inter-hubly/keeper/internal/app/domain/kdto"
 	"github.com/inter-hubly/keeper/internal/app/service"
 	"github.com/inter-hubly/pilot/hlog"
 
@@ -18,6 +19,8 @@ type Templates interface {
 	Save(c *gin.Context)
 	SearchTemplates(c *gin.Context)
 	SincronizeWhatsAppTemplate(c *gin.Context)
+	SaveVariables(c *gin.Context)
+	CountVariables(c *gin.Context)
 }
 
 var (
@@ -81,4 +84,39 @@ func (t *templateController) SincronizeWhatsAppTemplate(c *gin.Context) {
 		return
 	}
 	httprest.Created(c, nil)
+}
+
+func (t *templateController) SaveVariables(c *gin.Context) {
+	hlog.Debug(c, "templateController.SaveVariables", "SaveVariables Template")
+	templateId := c.Param("templateId")
+	ctx, _ := middleware.GetLoggedUser(c)
+
+	var variables []kdto.Variable
+
+	if err := c.BindJSON(&variables); err != nil {
+		httprest.Error(c, "Error when marshal body")
+		return
+	}
+
+	if err := t.templateService.SaveVariable(ctx, variables, templateId); err != nil {
+		httprest.Error(c, "Error when save variables")
+		return
+	}
+	httprest.Created(c, nil)
+}
+
+func (t *templateController) CountVariables(c *gin.Context) {
+	hlog.Debug(c, "templateController.CountVariables", "CountVariables Template")
+	ctx, _ := middleware.GetLoggedUser(c)
+	templateId := c.Param("templateId")
+	if templateId == "" {
+		httprest.Error(c, "Error when get template id from request")
+		return
+	}
+
+	variables, err := t.templateService.CountVariables(ctx, templateId)
+	if err != nil {
+		httprest.Error(c, "Error when count variables")
+	}
+	httprest.Ok(c, variables)
 }

@@ -5,9 +5,11 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 
 	"github.com/inter-hubly/keeper/internal/app/domain"
+	"github.com/inter-hubly/keeper/internal/app/domain/kdto"
 	"github.com/inter-hubly/pilot/database/hmongo"
 	"github.com/inter-hubly/pilot/hctx"
 	"github.com/inter-hubly/pilot/hlog"
@@ -20,6 +22,7 @@ type Variable interface {
 	SaveVariable(ctx context.Context, variable *domain.Variables) (*domain.Variables, error)
 	SaveManyVariables(ctx context.Context, variable *domain.Variables) error
 	GetVariables(ctx context.Context) (map[string]domain.SingleVariable, error)
+	VerifyUserVariables(ctx context.Context, variables []kdto.Variable) error
 }
 
 type variableRepository struct {
@@ -112,4 +115,24 @@ func (r *variableRepository) GetVariables(ctx context.Context) (map[string]domai
 	}
 
 	return result.Variable, nil
+}
+
+func (r *variableRepository) VerifyUserVariables(ctx context.Context, variables []kdto.Variable) error {
+	hlog.Debug(ctx, "variableRepository.VerifyUserVariables", "verifying variables for tenant")
+	tenantId := hctx.Tenant.Get(ctx)
+
+	filters := bson.M{}
+	for i := range variables {
+		filter := fmt.Sprintf("variable.%s", variables[i].Slug)
+		filters[filter] = bson.M{"$exists": true}
+	}
+	filters["tenantId"] = tenantId
+
+	var result bson.M
+	if err := r.connection.GetCollection(ctx, r.collection).FindOne(ctx, filters).Decode(&result); err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return err
+		}
+	}
+	return nil
 }
