@@ -46,15 +46,18 @@ func (s *messagesService) SearchMessages(ctx context.Context, loggedUser *hctx.L
 		hlog.Error(ctx, "messagesService.SearchMessages", fmt.Sprintf("error find messages %s", err))
 		return nil, err
 	}
-	campaings, err := s.campaignRepository.GetCampaignsByIds(ctx, campaingIds...)
-	if err != nil {
-		hlog.Error(ctx, "messagesService.SearchMessages", fmt.Sprintf("error find campaigns %s", err))
-		return nil, err
-	}
 
 	templateIdAndMessages := make(map[string]string)
-	for _, camp := range campaings {
-		templateIdAndMessages[camp.Id] = camp.Template.Message
+	if len(campaingIds) > 0 {
+		campaings, err := s.campaignRepository.GetCampaignsByIds(ctx, campaingIds...)
+		if err != nil {
+			hlog.Error(ctx, "messagesService.SearchMessages", fmt.Sprintf("error find campaigns %s", err))
+			return nil, err
+		}
+		for _, camp := range campaings {
+			templateIdAndMessages[camp.Id] = camp.Template.Message
+		}
+
 	}
 
 	if msgDb != nil {
