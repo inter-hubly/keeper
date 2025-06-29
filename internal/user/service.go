@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/inter-hubly/keeper/infraestructure/config"
+	"github.com/inter-hubly/keeper/internal/config"
 	kdto2 "github.com/inter-hubly/keeper/internal/domain/kdto"
 	"github.com/inter-hubly/pilot/domain/entity"
 	"github.com/inter-hubly/pilot/hlog"

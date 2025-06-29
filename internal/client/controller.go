@@ -5,9 +5,9 @@ import (
 	"sync"
 
 	"github.com/gin-gonic/gin"
-	"github.com/inter-hubly/keeper/infraestructure/middleware"
 	"github.com/inter-hubly/keeper/internal/domain/kdto"
 	"github.com/inter-hubly/keeper/web/httprest"
+	"github.com/inter-hubly/keeper/web/middleware"
 )
 
 type Client interface {

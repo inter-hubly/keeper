@@ -7,7 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/inter-hubly/keeper/infraestructure/config"
+	"github.com/inter-hubly/keeper/internal/config"
 	"github.com/inter-hubly/keeper/web/httprest"
 	"github.com/inter-hubly/pilot/hctx"
 	"github.com/inter-hubly/pilot/server"

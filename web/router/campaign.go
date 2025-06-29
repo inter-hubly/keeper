@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/gin-gonic/gin"
-	"github.com/inter-hubly/keeper/infraestructure/middleware"
 	"github.com/inter-hubly/keeper/internal/campaign"
+	"github.com/inter-hubly/keeper/web/middleware"
 )
 
 func newCampaignRouter(ctx context.Context, e *gin.RouterGroup) {
