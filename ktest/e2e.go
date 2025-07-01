@@ -1,8 +1,7 @@
-package templates
+package ktest
 
 import (
 	"context"
-	"testing"
 
 	"github.com/inter-hubly/pilot/database/elasticsearch"
 	"github.com/inter-hubly/pilot/database/hmongo"
@@ -10,19 +9,7 @@ import (
 	"github.com/inter-hubly/pilot/testutils"
 )
 
-func TestMain(m *testing.M) {
-	ctx := context.Background()
-
-	closeMongo := mongoSetup(ctx)
-	closePgsql := pgsqlSetup(ctx)
-	closeElastic := elasticSetup(ctx)
-	defer closeMongo(ctx)
-	defer closePgsql(ctx)
-	defer closeElastic(ctx)
-	m.Run()
-}
-
-func mongoSetup(ctx context.Context) func(context.Context) error {
+func MongoSetup(ctx context.Context) func(context.Context) error {
 	mongoHost, close, err := testutils.Mongo(ctx)
 	if err != nil {
 		panic(err)
@@ -36,7 +23,7 @@ func mongoSetup(ctx context.Context) func(context.Context) error {
 	return close
 }
 
-func pgsqlSetup(ctx context.Context) func(context.Context) error {
+func PgsqlSetup(ctx context.Context) func(context.Context) error {
 	pgsqlHost, close, err := testutils.Pgsql(ctx)
 	if err != nil {
 		panic(err)
@@ -48,7 +35,7 @@ func pgsqlSetup(ctx context.Context) func(context.Context) error {
 	return close
 }
 
-func elasticSetup(ctx context.Context) func(context.Context) error {
+func ElasticSetup(ctx context.Context) func(context.Context) error {
 	elasticHost, close, err := testutils.ElasticSearch(ctx)
 	if err != nil {
 		panic(err)

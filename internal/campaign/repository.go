@@ -38,7 +38,7 @@ func NewRepository(ctx context.Context) *campaignRepository {
 	_campaignRepositoryOnce.Do(func() {
 		_campaignRepository = &campaignRepository{
 			connection: hmongo.GetConnection(ctx),
-			collection: "campaign",
+			collection: "campaigns",
 		}
 	})
 	return _campaignRepository
