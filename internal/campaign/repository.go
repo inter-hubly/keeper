@@ -4,6 +4,7 @@ package campaign
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 
@@ -20,7 +21,7 @@ type Repository interface {
 	GetCampaignById(ctx context.Context, campaignId string) (*entity.Campaign, error)
 	GetCampaignsByIds(ctx context.Context, campaignId ...string) ([]entity.Campaign, error)
 	GetCampaignsTemplateById(ctx context.Context, campaignId []string) ([]string, error)
-	SaveCampaign(ctx context.Context, campaign *entity.Campaign) (*entity.Campaign, error)
+	SaveCampaign(ctx context.Context, campaign *entity.Campaign) error
 	ListCampaign(ctx context.Context) ([]entity.Campaign, error)
 }
 
@@ -62,16 +63,20 @@ func (c *campaignRepository) GetCampaignById(ctx context.Context, campaignId str
 	return &campaign, nil
 }
 
-func (c *campaignRepository) SaveCampaign(ctx context.Context, campaign *entity.Campaign) (*entity.Campaign, error) {
+func (c *campaignRepository) SaveCampaign(ctx context.Context, campaign *entity.Campaign) error {
+	if campaign == nil {
+		return errors.New("campaign is nil")
+	}
+
 	hlog.Debug(ctx, "campaign.repository.SaveCampaign", fmt.Sprintf("saving campaign %s", campaign.Id))
 	one, err := c.connection.GetCollection(ctx, c.collection).InsertOne(ctx, campaign)
 	if err != nil {
 		hlog.Error(ctx, "campaign.repository.SaveCampaign", fmt.Sprintf("error while saving campaign %s", campaign.Id))
-		return nil, err
+		return err
 	}
 	id := one.InsertedID.(primitive.ObjectID)
 	campaign.Id = id.Hex()
-	return campaign, nil
+	return nil
 }
 
 func (c *campaignRepository) ListCampaign(ctx context.Context) ([]entity.Campaign, error) {
@@ -100,18 +105,18 @@ func (c *campaignRepository) GetCampaignsTemplateById(ctx context.Context, campa
 		err      error
 	)
 
-	var objectIDs []primitive.ObjectID
-	for _, id := range campaignId {
-		objID, err := primitive.ObjectIDFromHex(id)
-		if err != nil {
-			hlog.Error(ctx, "campaign.repository.GetCampaignsById", fmt.Sprintf("invalid ObjectId: %s", id))
-			return nil, err
-		}
-		objectIDs = append(objectIDs, objID)
-	}
+	//var objectIDs []primitive.ObjectID
+	//for _, id := range campaignId {
+	//	objID, err := primitive.ObjectIDFromHex(id)
+	//	if err != nil {
+	//		hlog.Error(ctx, "campaign.repository.GetCampaignsById", fmt.Sprintf("invalid ObjectId: %s", id))
+	//		return nil, err
+	//	}
+	//	objectIDs = append(objectIDs, objID)
+	//}
 
 	cur, err := c.connection.GetCollection(ctx, c.collection).Find(ctx, bson.M{
-		"_id": bson.M{"$in": objectIDs},
+		"_id": bson.M{"$in": campaignId},
 	}, options.Find().SetProjection(
 		bson.M{
 			"template.id": 1,
@@ -135,22 +140,20 @@ func (c *campaignRepository) GetCampaignsTemplateById(ctx context.Context, campa
 
 func (c *campaignRepository) GetCampaignsByIds(ctx context.Context, campaignId ...string) ([]entity.Campaign, error) {
 	hlog.Debug(ctx, "campaign.repository.GetCampaignsByIds", fmt.Sprintf("campaignId: %s", campaignId))
-	var (
-		campaigns []entity.Campaign
-		objectIDs []primitive.ObjectID
-	)
+	var campaigns []entity.Campaign
+	//objectIDs []primitive.ObjectID
 
 	tenantId := hctx.Tenant.Get(ctx)
-	for _, id := range campaignId {
-		objID, err := primitive.ObjectIDFromHex(id)
-		if err != nil {
-			hlog.Error(ctx, "campaign.repository.GetCampaignsById", fmt.Sprintf("invalid ObjectId: %s", id))
-			return nil, err
-		}
-		objectIDs = append(objectIDs, objID)
-	}
+	//for _, id := range campaignId {
+	//	objID, err := primitive.ObjectIDFromHex(id)
+	//	if err != nil {
+	//		hlog.Error(ctx, "campaign.repository.GetCampaignsById", fmt.Sprintf("invalid ObjectId: %s", id))
+	//		return nil, err
+	//	}
+	//	objectIDs = append(objectIDs, objID)
+	//}
 	cur, err := c.connection.GetCollection(ctx, c.collection).Find(ctx, bson.M{
-		"_id":      bson.M{"$in": objectIDs},
+		"_id":      bson.M{"$in": campaignId},
 		"tenantId": tenantId,
 	})
 	if err != nil {

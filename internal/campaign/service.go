@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	"github.com/inter-hubly/keeper/internal/contact"
-	domain2 "github.com/inter-hubly/keeper/internal/domain"
+	"github.com/inter-hubly/keeper/internal/domain"
 	"github.com/inter-hubly/keeper/internal/domain/kdto"
 	"github.com/inter-hubly/keeper/internal/templates"
 	"github.com/inter-hubly/keeper/internal/variables"
@@ -22,9 +22,9 @@ import (
 
 type Service interface {
 	SaveCampaign(ctx context.Context, loggedUser *hctx.Logged, campaignDto *kdto.Campaign) (*entity.Campaign, error)
-	GetCampaign(ctx context.Context, user *hctx.Logged) (*entity.Campaign, error)
-	StartCampaign(ctx context.Context, user *hctx.Logged, campaignId string) error
-	ListCampaign(ctx context.Context, user *hctx.Logged) ([]entity.Campaign, error)
+	GetCampaign(ctx context.Context, loggedUser *hctx.Logged) (*entity.Campaign, error)
+	StartCampaign(ctx context.Context, loggedUser *hctx.Logged, campaignId string) error
+	ListCampaign(ctx context.Context, loggedUser *hctx.Logged) ([]entity.Campaign, error)
 }
 
 type campaignService struct {
@@ -120,15 +120,14 @@ func (c *campaignService) SaveCampaign(ctx context.Context, loggedUser *hctx.Log
 		Flows:      campaignDto.Flows,
 	}
 
-	campaign, err := c.campaignRepository.SaveCampaign(ctx, &campaignDb)
-	if err != nil {
+	if err = c.campaignRepository.SaveCampaign(ctx, &campaignDb); err != nil {
 		hlog.Error(ctx, "campaign.service.SaveCampaign", fmt.Sprintf("SaveCampaign Error: %v", err))
 		return nil, err
 	}
-	return campaign, nil
+	return &campaignDb, nil
 }
 
-func (c *campaignService) containsAll(list1 []domain2.Contact, list2 []string) bool {
+func (c *campaignService) containsAll(list1 []domain.Contact, list2 []string) bool {
 	elements := make(map[string]bool)
 
 	for _, item := range list2 {
@@ -144,7 +143,7 @@ func (c *campaignService) containsAll(list1 []domain2.Contact, list2 []string) b
 	return true
 }
 
-func (c *campaignService) containsAllVariables(list1 map[string]domain2.SingleVariable, list2 []valueobject.Pair[string, string]) bool {
+func (c *campaignService) containsAllVariables(list1 map[string]domain.SingleVariable, list2 []valueobject.Pair[string, string]) bool {
 	elements := make(map[string]bool)
 
 	for _, item := range list2 {
